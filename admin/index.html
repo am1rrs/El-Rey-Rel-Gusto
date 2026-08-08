@@ -1,138 +1,86 @@
 <!DOCTYPE html>
-<html lang="fr" dir="ltr">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - El Rey del Gusto</title>
-    <link rel="stylesheet" href="../css/styles.css">
-    <link rel="stylesheet" href="dashboard.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>قائمة المطعم - طلب الطعام</title>
+    <style>
+        body {font-family: Arial, sans-serif; direction: rtl; margin: 2rem;}
+        .menu-item {border: 1px solid #ccc; padding: 1rem; margin: 1rem 0;}
+        input, select, button {padding: 0.5rem; margin: 0.2rem;}
+        #orderSummary {margin-top: 2rem; padding: 1rem; background: #f9f9f9;}
+    </style>
 </head>
 <body>
-    <!-- Login Screen -->
-    <div id="login-screen" class="login-screen">
-        <div class="login-container">
-            <h1 class="login-title">El Rey del Gusto</h1>
-            <h2 class="login-subtitle">Tableau de Bord Admin</h2>
-            <form id="login-form" onsubmit="handleLogin(event)">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" required placeholder="admin@elrey.com">
-                </div>
-                <div class="form-group">
-                    <label for="password">Mot de passe</label>
-                    <input type="password" id="password" required placeholder="••••••••">
-                </div>
-                <button type="submit" class="login-btn">Se connecter</button>
-                <p class="demo-credentials">
-                    <small>Demo: admin@elrey.com / admin123</small>
-                </p>
-            </form>
+    <h1>قائمة المطعم</h1>
+
+    <div id="menu">
+        <!-- مثال على عناصر القائمة (يمكنك تعديلها) -->
+        <div class="menu-item">
+            <h3>مشاوي mixed grill</h3>
+            <p>طبق مشاوي متنوعة مع الأرز والسلطة</p>
+            <label>
+                الكمية:
+                <input type="number" min="1" value="1" data-item="مشاوي mixed grill" data-price="45">
+            </label>
+        </div>
+        <div class="menu-item">
+            <h3>كبسة دجاج</h3>
+            <p>أرز بسمتي مع دجاج متبل ومكسرات</p>
+            <label>
+                الكمية:
+                <input type="number" min="1" value="1" data-item="كبسة دجاج" data-price="35">
+            </label>
+        </div>
+        <div class="menu-item">
+            <h3>سلطة فتوش</h3>
+            <p>سلطة خضار طازجة مع الخبز المحمص</p>
+            <label>
+                الكمية:
+                <input type="number" min="1" value="1" data-item="سلطة فتوش" data-price="15">
+            </label>
         </div>
     </div>
 
-    <!-- Dashboard -->
-    <div id="dashboard" class="dashboard" style="display: none;">
-        <!-- Header -->
-        <header class="dashboard-header">
-            <div class="header-left">
-                <h1 class="dashboard-title">El Rey del Gusto</h1>
-                <span class="dashboard-subtitle">Administration</span>
-            </div>
-            <div class="header-right">
-                <button class="refresh-btn" onclick="refreshOrders()">🔄 Actualiser</button>
-                <button class="logout-btn" onclick="handleLogout()">Déconnexion</button>
-            </div>
-        </header>
+    <button id="checkoutBtn">إتمام الطلب وإرسال إلى واتساب</button>
 
-        <!-- Stats Cards -->
-        <div class="stats-container">
-            <div class="stat-card">
-                <div class="stat-icon">📋</div>
-                <div class="stat-info">
-                    <div class="stat-value" id="stat-pending">0</div>
-                    <div class="stat-label">En attente</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">👨‍🍳</div>
-                <div class="stat-info">
-                    <div class="stat-value" id="stat-preparing">0</div>
-                    <div class="stat-label">En préparation</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">✅</div>
-                <div class="stat-info">
-                    <div class="stat-value" id="stat-ready">0</div>
-                    <div class="stat-label">Prêtes</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">💰</div>
-                <div class="stat-info">
-                    <div class="stat-value" id="stat-total">0 DA</div>
-                    <div class="stat-label">Total du jour</div>
-                </div>
-            </div>
-        </div>
+    <div id="orderSummary"></div>
 
-        <!-- Filters -->
-        <div class="filters-container">
-            <div class="filter-group">
-                <label>Status:</label>
-                <select id="status-filter" onchange="applyFilters()">
-                    <option value="all">Tous</option>
-                    <option value="pending">En attente</option>
-                    <option value="preparing">En préparation</option>
-                    <option value="ready">Prêt</option>
-                    <option value="delivered">Livré</option>
-                    <option value="cancelled">Annulé</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Type:</label>
-                <select id="type-filter" onchange="applyFilters()">
-                    <option value="all">Tous</option>
-                    <option value="dine-in">Sur place</option>
-                    <option value="delivery">Livraison</option>
-                    <option value="takeaway">À emporter</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Recherche:</label>
-                <input type="text" id="search-filter" placeholder="Numéro de commande ou téléphone" oninput="applyFilters()">
-            </div>
-        </div>
+    <script>
+        // عند الضغط على زر الإتمام
+        document.getElementById('checkoutBtn').addEventListener('click', function () {
+            const items = [];
+            let total = 0;
 
-        <!-- Orders List -->
-        <div class="orders-container">
-            <h2 class="section-title">Commandes</h2>
-            <div id="orders-list"></div>
-            <div id="no-orders" class="no-orders" style="display: none;">
-                <p>Aucune commande trouvée</p>
-            </div>
-        </div>
-    </div>
+            // جمع جميعInputs التي فيها قيمة > 0
+            document.querySelectorAll('.menu-item input[type="number"]').forEach(input => {
+                const qty = parseInt(input.value) || 0;
+                if (qty > 0) {
+                    const name = input.dataset.item;
+                    const price = parseFloat(input.dataset.price) || 0;
+                    const subtotal = qty * price;
+                    total += subtotal;
+                    items.push(`${name} × ${qty} = ${subtotal} ريال`);
+                }
+            });
 
-    <!-- Order Details Modal -->
-    <div id="order-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeOrderModal()">&times;</button>
-            <div id="order-details"></div>
-        </div>
-    </div>
+            if (items.length === 0) {
+                alert('يرجى اختيار mindestens عنصر واحد من القائمة');
+                return;
+            }
 
-    <!-- Audio notification -->
-    <audio id="notification-sound" preload="auto">
-        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBDGH0fPTgjMGHm7A7+OZURE=" type="audio/wav">
-    </audio>
+            // إعداد الرسالة التي سيتم إرسالها إلى واتساب
+            const phoneNumber = '966501234567'; // ← غير هذا الرقم إلى رقم المطعم مع رمز الدولة بدون + أو مسافات
+            let message = '*طلب جديد من موقع المطعم*%0A';
+            message += items.map(i => `- ${i}`).join('%0A');
+            message += `%0A*الإجمالي:* ${total} ريال%0A`;
+            message += `%0A*شكراً لثقتكم!*`;
 
-    <script src="../js/firebase-config.js"></script>
-    <script src="../js/order-service.js"></script>
-    <script src="auth.js"></script>
-    <script src="dashboard.js"></script>
+            // بناء رابط واتساب click-to-chat
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+            // فتح واتساب في نافذة جديدة (أو تطبيق إذا كان الجهاز يدعمه)
+            window.open(whatsappUrl, '_blank');
+        });
+    </script>
 </body>
 </html>
