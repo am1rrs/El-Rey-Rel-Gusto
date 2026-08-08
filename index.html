@@ -1,93 +1,86 @@
 <!DOCTYPE html>
-<html lang="fr" dir="ltr">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>El Rey del Gusto - Menu Complet</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/categories.css">
-    <link rel="stylesheet" href="css/cart.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>قائمة المطعم - طلب الطعام</title>
+    <style>
+        body {font-family: Arial, sans-serif; direction: rtl; margin: 2rem;}
+        .menu-item {border: 1px solid #ccc; padding: 1rem; margin: 1rem 0;}
+        input, select, button {padding: 0.5rem; margin: 0.2rem;}
+        #orderSummary {margin-top: 2rem; padding: 1rem; background: #f9f9f9;}
+    </style>
 </head>
 <body>
-    <!-- Language Selector -->
-    <div class="language-selector">
-        <button class="lang-btn active" data-lang="fr">Français</button>
-        <button class="lang-btn" data-lang="ar">العربية</button>
-        <button class="lang-btn" data-lang="en">English</button>
-    </div>
+    <h1>قائمة المطعم</h1>
 
-    <!-- Cart Icon -->
-    <div class="cart-icon-container">
-        <div class="cart-icon" id="cart-icon" onclick="window.location.href='cart.html'">
-            🛒
-            <span class="cart-badge" id="cart-badge" style="display: none;">0</span>
+    <div id="menu">
+        <!-- مثال على عناصر القائمة (يمكنك تعديلها) -->
+        <div class="menu-item">
+            <h3>مشاوي mixed grill</h3>
+            <p>طبق مشاوي متنوعة مع الأرز والسلطة</p>
+            <label>
+                الكمية:
+                <input type="number" min="1" value="1" data-item="مشاوي mixed grill" data-price="45">
+            </label>
+        </div>
+        <div class="menu-item">
+            <h3>كبسة دجاج</h3>
+            <p>أرز بسمتي مع دجاج متبل ومكسرات</p>
+            <label>
+                الكمية:
+                <input type="number" min="1" value="1" data-item="كبسة دجاج" data-price="35">
+            </label>
+        </div>
+        <div class="menu-item">
+            <h3>سلطة فتوش</h3>
+            <p>سلطة خضار طازجة مع الخبز المحمص</p>
+            <label>
+                الكمية:
+                <input type="number" min="1" value="1" data-item="سلطة فتوش" data-price="15">
+            </label>
         </div>
     </div>
 
-    <!-- Header -->
-    <header class="header">
-        <div class="decorative-element"></div>
-        <h1 class="restaurant-name">El Rey del Gusto</h1>
-        <p class="tagline" data-translate="tagline">Le Roi du Goût</p>
-        <div class="decorative-element"></div>
-    </header>
+    <button id="checkoutBtn">إتمام الطلب وإرسال إلى واتساب</button>
 
-    <!-- Contact Info -->
-    <section class="contact-section">
-        <div class="contact-grid">
-            <div class="contact-item">
-                <span class="icon">📞</span>
-                <a href="tel:0790277731">0790 27 77 31</a>
-            </div>
-            <div class="contact-item">
-                <span class="icon">📍</span>
-                <span data-translate="location">Relizane, Algérie</span>
-            </div>
-            <div class="contact-item">
-                <span class="icon">🕒</span>
-                <span data-translate="hours">Ouvert tous les jours</span>
-            </div>
-        </div>
-        <div class="social-links">
-            <a href="https://www.instagram.com/elrey.48" target="_blank" class="social-btn">
-                <span>📷</span> Instagram
-            </a>
-            <a href="https://www.snapchat.com/add/el.rey48" target="_blank" class="social-btn">
-                <span>👻</span> Snapchat
-            </a>
-        </div>
-    </section>
+    <div id="orderSummary"></div>
 
-    <!-- Category Navigation -->
-    <div class="category-nav-wrapper">
-        <div class="category-nav-container">
-            <div id="category-nav"></div>
-        </div>
-    </div>
+    <script>
+        // عند الضغط على زر الإتمام
+        document.getElementById('checkoutBtn').addEventListener('click', function () {
+            const items = [];
+            let total = 0;
 
-    <!-- Menu Container - Will be populated by JavaScript -->
-    <div id="menu-container"></div>
+            // جمع جميعInputs التي فيها قيمة > 0
+            document.querySelectorAll('.menu-item input[type="number"]').forEach(input => {
+                const qty = parseInt(input.value) || 0;
+                if (qty > 0) {
+                    const name = input.dataset.item;
+                    const price = parseFloat(input.dataset.price) || 0;
+                    const subtotal = qty * price;
+                    total += subtotal;
+                    items.push(`${name} × ${qty} = ${subtotal} ريال`);
+                }
+            });
 
-    <!-- QR Code Section -->
-    <section class="qr-section">
-        <h3 data-translate="qr-title">Scannez pour voir le menu</h3>
-        <div id="qrcode"></div>
-        <button class="print-btn" onclick="window.print()" data-translate="print-btn">Imprimer le menu</button>
-    </section>
+            if (items.length === 0) {
+                alert('يرجى اختيار mindestens عنصر واحد من القائمة');
+                return;
+            }
 
-    <!-- Footer -->
-    <footer class="footer">
-        <p>&copy; 2026 El Rey del Gusto - <span data-translate="footer-text">Tous droits réservés</span></p>
-    </footer>
+            // إعداد الرسالة التي سيتم إرسالها إلى واتساب
+            const phoneNumber = '966501234567'; // ← غير هذا الرقم إلى رقم المطعم مع رمز الدولة بدون + أو مسافات
+            let message = '*طلب جديد من موقع المطعم*%0A';
+            message += items.map(i => `- ${i}`).join('%0A');
+            message += `%0A*الإجمالي:* ${total} ريال%0A`;
+            message += `%0A*شكراً لثقتكم!*`;
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="js/menu-data.js"></script>
-    <script src="js/cart.js"></script>
-    <script src="js/menu-renderer.js"></script>
-    <script src="js/categories.js"></script>
-    <script src="js/script.js"></script>
+            // بناء رابط واتساب click-to-chat
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+            // فتح واتساب في نافذة جديدة (أو تطبيق إذا كان الجهاز يدعمه)
+            window.open(whatsappUrl, '_blank');
+        });
+    </script>
 </body>
 </html>

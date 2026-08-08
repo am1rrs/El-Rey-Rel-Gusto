@@ -1,5 +1,6 @@
 // Checkout Page Logic
 // Handles order type selection, form validation, and order submission
+// Updated to open WhatsApp with the order details after successful submission
 
 let selectedOrderType = null;
 let cart = null;
@@ -81,22 +82,21 @@ function renderOrderSummary() {
 
         const sizeInfo = item.size ? ` (${item.size})` : '';
         const qtyInfo = item.quantity > 1 ? ` x${item.quantity}` : '';
-        const notesInfo = item.notes ? `<div class="summary-item-details">Note: ${item.notes}</div>` : '';
+        const notesInfo = item.notes ? `<div class="summary-item-details">ملاحظة: ${item.notes}</div>` : '';
 
         itemEl.innerHTML = `
             <div class="summary-item-info">
                 <div class="summary-item-name">${item.name}${sizeInfo}${qtyInfo}</div>
                 ${notesInfo}
             </div>
-            <div class="summary-item-price">${item.price * item.quantity} DA</div>
+            <div class="summary-item-price">${item.price * item.quantity} د.إ</div>
         `;
-
         container.appendChild(itemEl);
     });
 
     // Update totals
     const subtotal = cart.getTotal();
-    document.getElementById('summary-subtotal').textContent = subtotal + ' DA';
+    document.getElementById('summary-subtotal').textContent = subtotal + ' د.إ';
 
     // Add delivery fee if applicable
     const deliveryFeeRow = document.getElementById('delivery-fee-row');
@@ -105,13 +105,13 @@ function renderOrderSummary() {
     if (selectedOrderType === 'delivery') {
         deliveryFee = 200; // Fixed delivery fee
         deliveryFeeRow.style.display = 'flex';
-        document.getElementById('summary-delivery-fee').textContent = deliveryFee + ' DA';
+        document.getElementById('summary-delivery-fee').textContent = deliveryFee + ' د.إ';
     } else {
         deliveryFeeRow.style.display = 'none';
     }
 
     const total = subtotal + deliveryFee;
-    document.getElementById('summary-total').textContent = total + ' DA';
+    document.getElementById('summary-total').textContent = total + ' د.إ';
 }
 
 function validateForm() {
@@ -121,24 +121,24 @@ function validateForm() {
     const address = document.getElementById('customer-address').value.trim();
 
     if (!name) {
-        showError('Veuillez entrer votre nom');
+        showError('الرجاء إدخال اسمك');
         return false;
     }
 
     if (!phone) {
-        showError('Veuillez entrer votre numéro de téléphone');
+        showError('الرجاء إدخال رقم هاتفك');
         return false;
     }
 
     // Validate phone format (Algerian)
     const phoneRegex = /^(0)(5|6|7)[0-9]{8}$/;
     if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
-        showError('Numéro de téléphone invalide (Format: 07XX XX XX XX)');
+        showError('رقم هاتف غير صالح (الصيغة: 07XX XX XX XX)');
         return false;
     }
 
     if (selectedOrderType === 'delivery' && !address) {
-        showError('Veuillez entrer votre adresse de livraison');
+        showError('الرجاء إدخال عنوان التسليم');
         return false;
     }
 
@@ -146,7 +146,7 @@ function validateForm() {
 }
 
 function showError(message) {
-    alert(message); // Simple alert for now
+    alert(message);
 }
 
 function showLoading() {
@@ -189,7 +189,6 @@ async function submitOrder() {
         total: cart.getTotal() + (selectedOrderType === 'delivery' ? 200 : 0),
 
         specialInstructions: document.getElementById('special-instructions').value.trim(),
-
         paymentMethod: 'cash',
         paymentStatus: 'pending'
     };
@@ -200,18 +199,55 @@ async function submitOrder() {
 
     if (!result.success) {
         hideLoading();
-        showError('Erreur lors de l\'envoi de la commande. Veuillez réessayer.');
+        showError('خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.');
         return;
     }
 
-    // Clear cart
+    // ==== New logic: Open WhatsApp with the order summary ====
+    const customerPhone = orderData.customer.phone.replace(/\s/g, '');
+    const customerName = orderData.customer.name;
+    const orderType = orderData.orderType;
+    const pickupTime = orderData.pickupTime;
+    const specialInstructions = orderData.specialInstructions;
+
+    // Build the WhatsApp message
+    const whatsappMessage = `
+*طلب جديد من مطعم El Rey del Gusto* %0A
+%0A_الاسم_: ${customerName} %0A
+_رقم الهاتف_: ${customerPhone} %0A
+_نوع الطلب_: ${orderType} %0A`;
+
+    if (orderType === 'takeaway') {
+        whatsappMessage += `_وقت الاستلام_: ${pickupTime} %0A`;
+    } else if (orderType === 'delivery') {
+        whatsappMessage += `_عنوان التسليم_: ${orderData.customer.address} %0A`;
+    }
+
+    whatsappMessage += `%0A_الإجمالي_: ${orderData.total} د.إ %0A%0A`;
+
+    if (specialInstructions) {
+        whatsappMessage += `_ملاحظات خاصة_: ${specialInstructions} %0A`;
+    }
+
+    whatsappMessage += `%0A_شكراً لاختيارنا!_`;
+
+    const whatsappUrl = `https://wa.me/${customerPhone}?text=${encodeURIComponent(whatsappMessage)}`;
+
+    // Open WhatsApp in a new tab/window
+    window.open(whatsappUrl, '_blank');
+
+    // Save order locally (optional)
+    saveOrderLocally(orderData);
+
+    // Clear cart after success
     cart.clear();
 
-    // Redirect to confirmation page
+    // Optionally redirect after a short delay
     setTimeout(() => {
         hideLoading();
-        window.location.href = `order-confirmation.html?orderId=${orderData.orderId}`;
-    }, 1000);
+        // You may keep the user on the same page or go to a thank‑you page
+        // Example: window.location.href = 'thankyou.html';
+    }, 1500);
 }
 
 function generateOrderId() {
