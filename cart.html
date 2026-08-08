@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panier - El Rey del Gusto</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/cart.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Language Selector -->
+    <div class="language-selector">
+        <button class="lang-btn active" data-lang="fr">Français</button>
+        <button class="lang-btn" data-lang="ar">العربية</button>
+        <button class="lang-btn" data-lang="en">English</button>
+    </div>
+
+    <div class="cart-page">
+        <!-- Cart Header -->
+        <div class="cart-header">
+            <a href="menu.html" class="back-btn">
+                <span>←</span>
+                <span data-translate="back">Retour au menu</span>
+            </a>
+            <h1 class="cart-title" data-translate="cart-title">Mon Panier</h1>
+        </div>
+
+        <!-- Cart Items -->
+        <div id="cart-items"></div>
+
+        <!-- Empty Cart Message -->
+        <div id="cart-empty" class="cart-empty" style="display: none;">
+            <div class="cart-empty-icon">🛒</div>
+            <h3 data-translate="cart-empty-title">Votre panier est vide</h3>
+            <p data-translate="cart-empty-text">Ajoutez des articles pour commencer votre commande</p>
+            <a href="menu.html" class="browse-menu-btn" data-translate="browse-menu">Parcourir le menu</a>
+        </div>
+
+        <!-- Cart Summary -->
+        <div id="cart-summary" class="cart-summary" style="display: none;">
+            <div class="summary-row">
+                <span data-translate="subtotal">Sous-total</span>
+                <span id="cart-subtotal">0 DA</span>
+            </div>
+            <div class="summary-row total">
+                <span data-translate="total">Total</span>
+                <span id="cart-total">0 DA</span>
+            </div>
+            <button class="checkout-btn" onclick="proceedToCheckout()" data-translate="checkout">
+                Commander
+            </button>
+            <button class="clear-cart-btn" onclick="clearCart()" data-translate="clear-cart">
+                Vider le panier
+            </button>
+        </div>
+    </div>
+
+    <script src="js/menu-data.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+        function proceedToCheckout() {
+            window.location.href = 'checkout.html';
+        }
+
+        function clearCart() {
+            if (confirm('Voulez-vous vraiment vider le panier ?')) {
+                cart.clear();
+            }
+        }
+    </script>
+</body>
+</html>
