@@ -163,6 +163,22 @@ function hideLoading() {
     if (overlay) overlay.remove();
 }
 
+async function createOrder(orderData) {
+    const service = window.getOrderService ? window.getOrderService() : null;
+
+    if (!service || typeof service.submitOrder !== 'function') {
+        throw new Error('Order service unavailable');
+    }
+
+    const result = await service.submitOrder(orderData);
+
+    if (!result || !result.success) {
+        throw new Error(result && result.error ? result.error : 'Order not saved');
+    }
+
+    return result;
+}
+
 async function submitOrder() {
     if (!validateForm()) return;
 
@@ -194,27 +210,28 @@ async function submitOrder() {
         paymentStatus: 'pending'
     };
 
-    // Submit using OrderService
-    const service = window.getOrderService();
-    const result = await service.submitOrder(orderData);
+    try {
+        const result = await createOrder(orderData);
 
-    if (!result.success) {
+        // Persist local snapshot for the admin dashboard and confirmation page
+        saveOrderLocally(orderData);
+
+        // Clear cart after successful save
+        cart.clear();
+
         hideLoading();
-        showError('خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.');
-        return;
+
+        setTimeout(() => {
+            window.location.href = `order-confirmation.html?orderId=${orderData.orderId}`;
+        }, 500);
+
+        return result;
+    } catch (error) {
+        hideLoading();
+        showError((error && error.message) ? error.message : 'خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.');
+        console.error('Order creation failed:', error);
+        return { success: false, error: error && error.message ? error.message : 'Order creation failed' };
     }
-
-    // Save the order locally and show the in-site confirmation page
-    saveOrderLocally(orderData);
-
-    // Clear cart after success
-    cart.clear();
-
-    hideLoading();
-
-    setTimeout(() => {
-        window.location.href = `order-confirmation.html?orderId=${orderData.orderId}`;
-    }, 500);
 }
 
 function generateOrderId() {
@@ -247,4 +264,5 @@ function saveOrderLocally(orderData) {
 if (typeof window !== 'undefined') {
     window.selectOrderType = selectOrderType;
     window.submitOrder = submitOrder;
+    window.createOrder = createOrder;
 }

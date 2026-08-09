@@ -3,8 +3,9 @@
 
 let allOrders = [];
 let filteredOrders = [];
-let orderService = null;
+let adminOrderService = null; // NOTE: renamed — `orderService` is already a global in js/order-service.js; re-declaring it here is a SyntaxError and kills this whole script
 let lastOrderCount = 0;
+let ordersUnsubscribe = null; // active Firestore real-time listener handle
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeAdminPage);
@@ -113,13 +114,46 @@ function showDashboard() {
     document.getElementById('dashboard').style.display = 'block';
 
     // Initialize order service
-    orderService = window.getOrderService ? window.getOrderService() : null;
+    adminOrderService = window.getOrderService ? window.getOrderService() : null;
 
-    // Load orders
+    if (!adminOrderService || !adminOrderService.useFirebase) {
+        showDataStatus('⚠️ Firebase non connecté - seules les commandes locales sont affichées.', 'warn');
+        loadOrders(); // local fallback
+        return;
+    }
+
+    // Load once, then subscribe to real-time updates from Firestore
     loadOrders();
+    startListening();
+}
 
-    // Auto-refresh every 30 seconds
-    setInterval(loadOrders, 30000);
+// Subscribe to real-time order updates from Firestore (onSnapshot).
+// The listener pushes fresh data automatically as orders change.
+function startListening() {
+    if (!adminOrderService || typeof adminOrderService.listenToOrders !== 'function') return;
+
+    if (ordersUnsubscribe) {
+        ordersUnsubscribe();
+        ordersUnsubscribe = null;
+    }
+
+    ordersUnsubscribe = adminOrderService.listenToOrders(
+        function (orders) {
+            allOrders = Array.isArray(orders) ? orders : [];
+            console.log('[Admin] Real-time orders update:', allOrders.length, allOrders);
+            showDataStatus('🟢 Connecté - mise à jour en direct depuis Firestore (' + allOrders.length + ' commande(s)).', 'ok');
+            refreshFromData();
+        },
+        function (error) {
+            console.error('Firestore real-time listener error:', error);
+            showDataStatus(
+                '⚠️ Erreur de synchronisation en direct : ' + (error && error.message ? error.message : 'erreur inconnue'),
+                'error'
+            );
+            // Fall back to a one-off fetch so the table still updates on refresh
+            loadOrders();
+        }
+    );
 }
 
 function getLocalOrders() {
@@ -135,32 +169,61 @@ function getLocalOrders() {
 
 async function loadOrders() {
     try {
-        if (orderService && typeof orderService.getAllOrders === 'function') {
-            allOrders = await orderService.getAllOrders();
+        if (adminOrderService && typeof adminOrderService.getAllOrders === 'function') {
+            allOrders = await adminOrderService.getAllOrders();
         } else {
             allOrders = getLocalOrders();
         }
 
         allOrders = Array.isArray(allOrders) ? allOrders : [];
-        filteredOrders = [...allOrders];
-
-        // Check for new orders
-        checkNewOrders();
-
-        // Apply filters
-        applyFilters();
-
-        // Update stats
-        updateStats();
-
-        // Render orders
-        renderOrders();
+        console.log('[Admin] Orders loaded from Firestore:', allOrders.length, allOrders);
+        showDataStatus('🟢 Connecté - ' + allOrders.length + ' commande(s) depuis Firestore.', 'ok');
+        refreshFromData();
     } catch (error) {
         console.error('Failed to load orders:', error);
+        showDataStatus(
+            '❌ Impossible de charger les commandes depuis Firestore : ' + (error && error.message ? error.message : 'erreur inconnue'),
+            'error'
+        );
         allOrders = getLocalOrders();
         filteredOrders = [...allOrders];
         renderOrders();
     }
+}
+
+// Shared rendering path used by both the initial fetch and real-time updates
+function refreshFromData() {
+    allOrders = Array.isArray(allOrders) ? allOrders : [];
+    filteredOrders = [...allOrders];
+
+    checkNewOrders();
+    applyFilters();
+    updateStats();
+    renderOrders();
+}
+
+// Show a connection/error status banner in the dashboard
+function showDataStatus(message, type) {
+    const el = document.getElementById('data-status');
+    if (!el) return;
+
+    const styles = {
+        ok:    { background: '#E8F5E9', color: '#2E7D32', borderColor: '#A5D6A7' },
+        warn:  { background: '#FFF8E1', color: '#8A6D00', borderColor: '#FFE082' },
+        error: { background: '#FFEBEE', color: '#C62828', borderColor: '#EF9A9A' }
+    };
+    const s = styles[type] || styles.warn;
+
+    el.style.display = 'block';
+    el.style.background = s.background;
+    el.style.color = s.color;
+    el.style.border = '1px solid ' + s.borderColor;
+    el.style.padding = '12px 16px';
+    el.style.borderRadius = '8px';
+    el.style.fontSize = '14px';
+    el.style.fontWeight = '600';
+    el.style.marginBottom = '16px';
+    el.textContent = message;
 }
 
 function checkNewOrders() {
@@ -183,12 +246,12 @@ function playNotificationSound() {
 
 function updateStats() {
     const today = new Date().setHours(0, 0, 0, 0);
-    const todayOrders = allOrders.filter(o => o.timestamp >= today);
+    const todayOrders = allOrders.filter(o => orderTimestampMs(o) >= today);
 
     const pending = todayOrders.filter(o => o.status === 'pending').length;
     const preparing = todayOrders.filter(o => o.status === 'preparing').length;
     const ready = todayOrders.filter(o => o.status === 'ready').length;
-    const total = todayOrders.reduce((sum, o) => sum + o.total, 0);
+    const total = todayOrders.reduce((sum, o) => sum + (o.total || 0), 0);
 
     document.getElementById('stat-pending').textContent = pending;
     document.getElementById('stat-preparing').textContent = preparing;
@@ -215,7 +278,7 @@ function applyFilters() {
         // Search filter
         if (searchQuery) {
             const matchId = order.orderId.toLowerCase().includes(searchQuery);
-            const matchPhone = order.customer.phone.includes(searchQuery);
+            const matchPhone = ((order.customer && order.customer.phone) || '').includes(searchQuery);
             if (!matchId && !matchPhone) {
                 return false;
             }
@@ -278,20 +341,21 @@ function createOrderCard(order) {
         minute: '2-digit'
     });
 
+    const cust = order.customer || {};
     let customerInfo = `
-        <p><strong>Nom:</strong> ${order.customer.name}</p>
-        <p><strong>Tél:</strong> ${order.customer.phone}</p>
+        <p><strong>Nom:</strong> ${cust.name || '-'}</p>
+        <p><strong>Tél:</strong> ${cust.phone || '-'}</p>
     `;
 
-    if (order.orderType === 'delivery' && order.customer.address) {
-        customerInfo += `<p><strong>Adresse:</strong> ${order.customer.address}</p>`;
+    if (order.orderType === 'delivery' && cust.address) {
+        customerInfo += `<p><strong>Adresse:</strong> ${cust.address}</p>`;
     }
 
     if (order.orderType === 'dine-in' && order.tableNumber) {
         customerInfo += `<p><strong>Table:</strong> ${order.tableNumber}</p>`;
     }
 
-    const itemsList = order.items.map(item => {
+    const itemsList = (order.items || []).map(item => {
         const size = item.size ? ` (${item.size})` : '';
         const qty = item.quantity > 1 ? ` x${item.quantity}` : '';
         return `
@@ -354,10 +418,10 @@ function createOrderCard(order) {
 }
 
 async function updateOrderStatus(orderId, newStatus) {
-    if (!orderService) return;
+    if (!adminOrderService) return;
 
     try {
-        const result = await orderService.updateOrderStatus(orderId, newStatus);
+        const result = await adminOrderService.updateOrderStatus(orderId, newStatus);
 
         if (result.success) {
             // Reload orders

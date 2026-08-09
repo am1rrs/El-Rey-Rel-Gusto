@@ -107,6 +107,9 @@
             </div>
         </div>
 
+        <!-- Firestore connection / error status -->
+        <div id="data-status" class="data-status" style="display: none;"></div>
+
         <!-- Orders List -->
         <div class="orders-container">
             <h2 class="section-title">Commandes</h2>
@@ -130,6 +133,10 @@
         <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBDGH0fPTgjMGHm7A7+OZURE=" type="audio/wav">
     </audio>
 
+    <!-- Firebase SDK (compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="../js/firebase-config.js"></script>
     <script src="../js/order-service.js"></script>
     <script src="auth.js"></script>

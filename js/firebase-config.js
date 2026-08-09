@@ -2,12 +2,13 @@
 // Replace these values with your Firebase project credentials
 
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY_HERE",
-    authDomain: "elrey-gusto.firebaseapp.com",
-    projectId: "elrey-gusto",
-    storageBucket: "elrey-gusto.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID_HERE"
+    apiKey: "AIzaSyB_QoE54JOGR1hKmpX6ggvRQ8Ti8dAp7_E",
+    authDomain: "el-rey-del-gusto.firebaseapp.com",
+    projectId: "el-rey-del-gusto",
+    storageBucket: "el-rey-del-gusto.appspot.com",
+    messagingSenderId: "585819298129",
+    appId: "1:585819298129:web:c721eb36150b2eefa4db70",
+    measurementId: "G-54RPFMJRGJ"
 };
 
 // Initialize Firebase (when ready)
@@ -21,7 +22,11 @@ function initFirebase() {
     }
 
     try {
-        firebase.initializeApp(firebaseConfig);
+        // Idempotent: never initialize an already-initialized app (a second
+        // initializeApp throws and would silently downgrade us to localStorage).
+        if (firebase.apps.length === 0) {
+            firebase.initializeApp(firebaseConfig);
+        }
         db = firebase.firestore();
         auth = firebase.auth();
         console.log('Firebase initialized successfully');

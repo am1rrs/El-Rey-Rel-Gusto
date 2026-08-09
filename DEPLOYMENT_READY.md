@@ -1,7 +1,7 @@
 # El Rey del Gusto - Deployment Ready
 
 ## Overview
-This project is a static restaurant ordering website that keeps the customer inside the website flow and stores orders locally in the browser using `localStorage`.
+This project is a static restaurant ordering website that keeps the customer inside the website flow. Orders are persisted to **Firebase Firestore** (`orders` collection); a `localStorage` mirror is kept only so the confirmation page can render immediately and the admin dashboard can fall back during a Firebase outage.
 
 ## Features
 - Full menu page with category filtering
@@ -27,10 +27,11 @@ This version is ready for static hosting such as:
 - Any simple HTML hosting service
 
 ## Important behavior
-- The order is submitted and saved locally in `localStorage`
+- The order is submitted to **Firebase Firestore** first
+- The redirect to the confirmation page happens **only after** Firestore confirms the write — a failed save shows an error and never redirects
 - Customer remains on-site after submission
 - Confirmation page loads in the site with the generated `orderId`
-- Admin dashboard reads saved orders directly from local storage when needed
+- Admin dashboard reads orders from Firestore (auto-refresh every 30 s)
 
 ## Main files
 - index.html
@@ -52,4 +53,4 @@ The site has been checked locally via browser and the following behavior was con
 - Orders appear in the admin dashboard
 
 ## Production recommendation
-This is a solid static deployment for a single-location restaurant. For multi-device real-time syncing, a backend such as Firebase or Supabase can be connected later.
+Orders persist to Firebase Firestore across all devices. Before going live, restrict the Firestore `orders` rules (e.g. require Authentication) and move the admin dashboard to a real auth provider instead of the demo credentials.
