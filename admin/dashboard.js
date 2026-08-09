@@ -113,7 +113,7 @@ function showDashboard() {
     document.getElementById('dashboard').style.display = 'block';
 
     // Initialize order service
-    orderService = window.getOrderService();
+    orderService = window.getOrderService ? window.getOrderService() : null;
 
     // Load orders
     loadOrders();
@@ -122,11 +122,26 @@ function showDashboard() {
     setInterval(loadOrders, 30000);
 }
 
-async function loadOrders() {
-    if (!orderService) return;
-
+function getLocalOrders() {
     try {
-        allOrders = await orderService.getAllOrders();
+        const saved = localStorage.getItem('orders');
+        const parsed = saved ? JSON.parse(saved) : [];
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+        console.error('Failed to load orders from localStorage:', error);
+        return [];
+    }
+}
+
+async function loadOrders() {
+    try {
+        if (orderService && typeof orderService.getAllOrders === 'function') {
+            allOrders = await orderService.getAllOrders();
+        } else {
+            allOrders = getLocalOrders();
+        }
+
+        allOrders = Array.isArray(allOrders) ? allOrders : [];
         filteredOrders = [...allOrders];
 
         // Check for new orders
@@ -142,6 +157,9 @@ async function loadOrders() {
         renderOrders();
     } catch (error) {
         console.error('Failed to load orders:', error);
+        allOrders = getLocalOrders();
+        filteredOrders = [...allOrders];
+        renderOrders();
     }
 }
 
@@ -212,6 +230,8 @@ function applyFilters() {
 function renderOrders() {
     const container = document.getElementById('orders-list');
     const noOrders = document.getElementById('no-orders');
+
+    if (!container || !noOrders) return;
 
     if (filteredOrders.length === 0) {
         container.innerHTML = '';
