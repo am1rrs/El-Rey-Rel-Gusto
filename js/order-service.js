@@ -342,6 +342,14 @@ if (typeof window !== 'undefined') {
     window.OrderService = OrderService;
     window.getOrderService = () => ensureOrderService();
 
+    // Utility exports shared with the admin dashboard (reuse, don't re-declare).
+    window.orderTimestampMs = orderTimestampMs;
+    window.getFirebaseErrorMessage = getFirebaseErrorMessage;
+    window.isPermissionDenied = function isPermissionDenied(error) {
+        if (!error) return false;
+        return error.code === 'permission-denied' || /permission[-\s]?denied/i.test(error.message || '');
+    };
+
     // Diagnostic helper: run debugFirestore() in the browser console (admin page)
     // to verify Firestore reads work and inspect the stored orders.
     window.debugFirestore = async function debugFirestore() {

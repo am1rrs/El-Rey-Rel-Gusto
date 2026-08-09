@@ -14,21 +14,25 @@
     <!-- Login Screen -->
     <div id="login-screen" class="login-screen">
         <div class="login-container">
+            <div class="lang-switcher login-switcher" role="group" aria-label="Language">
+                <button type="button" class="lang-btn" data-lang="en">EN</button>
+                <button type="button" class="lang-btn" data-lang="fr">FR</button>
+                <button type="button" class="lang-btn" data-lang="ar">AR</button>
+            </div>
             <h1 class="login-title">El Rey del Gusto</h1>
-            <h2 class="login-subtitle">Tableau de Bord Admin</h2>
-            <form id="login-form" onsubmit="event.preventDefault(); window.handleLogin && window.handleLogin(event);">
+            <h2 class="login-subtitle" data-i18n="login.subtitle">Admin Dashboard</h2>
+            <form id="login-form" novalidate>
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" required placeholder="admin@elrey.com">
+                    <label for="email" data-i18n="login.email">Email</label>
+                    <input type="email" id="email" autocomplete="username" required placeholder="admin@elrey.com">
                 </div>
                 <div class="form-group">
-                    <label for="password">Mot de passe</label>
-                    <input type="password" id="password" required placeholder="••••••••">
+                    <label for="password" data-i18n="login.password">Password</label>
+                    <input type="password" id="password" autocomplete="current-password" required placeholder="••••••••">
                 </div>
-                <button type="submit" class="login-btn">Se connecter</button>
-                <p class="demo-credentials">
-                    <small>Demo: admin@elrey.com / admin123</small>
-                </p>
+                <button type="submit" class="login-btn" data-i18n="login.submit">Sign in</button>
+                <p id="login-hint" class="login-hint" hidden></p>
+                <p id="login-error" class="login-error" hidden></p>
             </form>
         </div>
     </div>
@@ -39,11 +43,16 @@
         <header class="dashboard-header">
             <div class="header-left">
                 <h1 class="dashboard-title">El Rey del Gusto</h1>
-                <span class="dashboard-subtitle">Administration</span>
+                <span class="dashboard-subtitle" data-i18n="dashboard.subtitle">Administration</span>
             </div>
             <div class="header-right">
-                <button type="button" class="refresh-btn" id="refresh-orders-btn">🔄 Actualiser</button>
-                <button type="button" class="logout-btn" id="logout-btn">Déconnexion</button>
+                <div class="lang-switcher" role="group" aria-label="Language">
+                    <button type="button" class="lang-btn" data-lang="en">EN</button>
+                    <button type="button" class="lang-btn" data-lang="fr">FR</button>
+                    <button type="button" class="lang-btn" data-lang="ar">AR</button>
+                </div>
+                <button type="button" class="refresh-btn" id="refresh-orders-btn" data-i18n="refresh">Refresh</button>
+                <button type="button" class="logout-btn" id="logout-btn" data-i18n="logout">Sign out</button>
             </div>
         </header>
 
@@ -53,28 +62,28 @@
                 <div class="stat-icon">📋</div>
                 <div class="stat-info">
                     <div class="stat-value" id="stat-pending">0</div>
-                    <div class="stat-label">En attente</div>
+                    <div class="stat-label" data-i18n="stats.pending">Pending</div>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">👨‍🍳</div>
                 <div class="stat-info">
                     <div class="stat-value" id="stat-preparing">0</div>
-                    <div class="stat-label">En préparation</div>
+                    <div class="stat-label" data-i18n="stats.preparing">In preparation</div>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">✅</div>
                 <div class="stat-info">
                     <div class="stat-value" id="stat-ready">0</div>
-                    <div class="stat-label">Prêtes</div>
+                    <div class="stat-label" data-i18n="stats.ready">Ready</div>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">💰</div>
                 <div class="stat-info">
                     <div class="stat-value" id="stat-total">0 DA</div>
-                    <div class="stat-label">Total du jour</div>
+                    <div class="stat-label" data-i18n="stats.total">Today's total</div>
                 </div>
             </div>
         </div>
@@ -82,48 +91,84 @@
         <!-- Filters -->
         <div class="filters-container">
             <div class="filter-group">
-                <label>Status:</label>
+                <label for="status-filter" data-i18n="filters.status">Status:</label>
                 <select id="status-filter">
-                    <option value="all">Tous</option>
-                    <option value="pending">En attente</option>
-                    <option value="preparing">En préparation</option>
-                    <option value="ready">Prêt</option>
-                    <option value="delivered">Livré</option>
-                    <option value="cancelled">Annulé</option>
+                    <option value="all" data-i18n="filters.all">All</option>
+                    <option value="pending" data-i18n="status.pending">Pending</option>
+                    <option value="preparing" data-i18n="status.preparing">In preparation</option>
+                    <option value="ready" data-i18n="status.ready">Ready</option>
+                    <option value="delivered" data-i18n="status.delivered">Delivered</option>
+                    <option value="cancelled" data-i18n="status.cancelled">Cancelled</option>
                 </select>
             </div>
             <div class="filter-group">
-                <label>Type:</label>
+                <label for="type-filter" data-i18n="filters.type">Type:</label>
                 <select id="type-filter">
-                    <option value="all">Tous</option>
-                    <option value="dine-in">Sur place</option>
-                    <option value="delivery">Livraison</option>
-                    <option value="takeaway">À emporter</option>
+                    <option value="all" data-i18n="filters.all">All</option>
+                    <option value="dine-in" data-i18n="type.dine-in">Dine-in</option>
+                    <option value="delivery" data-i18n="type.delivery">Delivery</option>
+                    <option value="takeaway" data-i18n="type.takeaway">Takeaway</option>
                 </select>
             </div>
             <div class="filter-group">
-                <label>Recherche:</label>
-                <input type="text" id="search-filter" placeholder="Numéro de commande ou téléphone">
+                <label for="search-filter" data-i18n="filters.search">Search:</label>
+                <input type="text" id="search-filter" data-i18n-ph="filters.searchPlaceholder" placeholder="Order number or phone">
             </div>
         </div>
 
         <!-- Firestore connection / error status -->
         <div id="data-status" class="data-status" style="display: none;"></div>
 
-        <!-- Orders List -->
+        <!-- Toolbar -->
+        <div class="actions-toolbar">
+            <button type="button" class="btn-tool" id="export-csv-btn" data-i18n="export.csv">Export CSV</button>
+            <button type="button" class="btn-tool" id="print-btn" data-i18n="export.print">Print</button>
+        </div>
+
+        <!-- Orders Table -->
         <div class="orders-container">
-            <h2 class="section-title">Commandes</h2>
-            <div id="orders-list"></div>
-            <div id="no-orders" class="no-orders" style="display: none;">
-                <p>Aucune commande trouvée</p>
+            <h2 class="section-title" data-i18n="orders.title">Orders</h2>
+            <div class="table-wrapper">
+                <table id="orders-table" class="orders-table">
+                    <thead>
+                        <tr>
+                            <th scope="col" data-sort-key="orderId" data-i18n="table.orderId">Order ID</th>
+                            <th scope="col" data-sort-key="timestamp" class="sort-desc" aria-sort="descending" data-i18n="table.date">Date / Time</th>
+                            <th scope="col" data-sort-key="customer" data-i18n="table.customer">Customer</th>
+                            <th scope="col" data-sort-key="items" data-i18n="table.items">Items</th>
+                            <th scope="col" data-sort-key="type" data-i18n="table.type">Type</th>
+                            <th scope="col" data-sort-key="total" data-i18n="table.total">Total</th>
+                            <th scope="col" data-sort-key="status" data-i18n="table.status">Status</th>
+                            <th scope="col" data-i18n="table.actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-tbody"></tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <div class="pagination-size">
+                    <label for="page-size" data-i18n="pagination.size">Per page</label>
+                    <select id="page-size">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <div class="pagination-nav">
+                    <button type="button" id="prev-page" data-i18n="pagination.prev">Prev</button>
+                    <span id="page-info" class="page-info">Page 1 of 1</span>
+                    <button type="button" id="next-page" data-i18n="pagination.next">Next</button>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Order Details Modal -->
-    <div id="order-modal" class="modal" style="display: none;">
+    <div id="order-modal" class="modal" role="dialog" aria-modal="true" style="display: none;">
         <div class="modal-content">
-            <button class="modal-close" onclick="closeOrderModal()">&times;</button>
+            <button type="button" class="modal-close" data-action="close" data-i18n-title="modal.close" aria-label="Close">&times;</button>
             <div id="order-details"></div>
         </div>
     </div>
@@ -140,51 +185,7 @@
     <script src="../js/firebase-config.js"></script>
     <script src="../js/order-service.js"></script>
     <script src="auth.js"></script>
-    <script>
-        window.adminLogin = function (event) {
-            if (event && typeof event.preventDefault === 'function') {
-                event.preventDefault();
-            }
-
-            const email = document.getElementById('email')?.value || '';
-            const password = document.getElementById('password')?.value || '';
-            const result = window.adminAuth ? window.adminAuth.login(email, password) : { success: false, error: 'Auth unavailable' };
-
-            if (result.success) {
-                const loginScreen = document.getElementById('login-screen');
-                const dashboard = document.getElementById('dashboard');
-                if (loginScreen) loginScreen.style.display = 'none';
-                if (dashboard) dashboard.style.display = 'block';
-                return true;
-            }
-
-            alert(result.error || 'Identifiants incorrects');
-            return false;
-        };
-
-        window.handleLogin = window.adminLogin;
-        window.handleLogout = function () {
-            if (!confirm('Voulez-vous vraiment vous déconnecter ?')) {
-                return false;
-            }
-
-            if (window.adminAuth) {
-                window.adminAuth.logout();
-            }
-
-            const loginScreen = document.getElementById('login-screen');
-            const dashboard = document.getElementById('dashboard');
-            if (loginScreen) loginScreen.style.display = 'flex';
-            if (dashboard) dashboard.style.display = 'none';
-            return true;
-        };
-
-        window.refreshOrders = window.refreshOrders || function () {
-            if (typeof window.loadAdminOrders === 'function') {
-                return window.loadAdminOrders();
-            }
-        };
-    </script>
+    <script src="i18n.js"></script>
     <script src="dashboard.js"></script>
 </body>
 </html>
