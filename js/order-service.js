@@ -226,13 +226,21 @@ class OrderService {
 }
 
 // Initialize service
-let orderService;
+let orderService = null;
+
+function ensureOrderService() {
+    if (!orderService) {
+        orderService = new OrderService();
+    }
+    return orderService;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    orderService = new OrderService();
+    ensureOrderService();
 });
 
 // Export for use in other scripts
 if (typeof window !== 'undefined') {
     window.OrderService = OrderService;
-    window.getOrderService = () => orderService;
+    window.getOrderService = () => ensureOrderService();
 }

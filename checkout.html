@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commander - El Rey del Gusto</title>
+    <title>Commander – El Rey del Gusto</title>
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/cart.css">
     <link rel="stylesheet" href="css/checkout.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,105 +12,106 @@
 </head>
 <body>
     <div class="checkout-page">
+        <!-- Header -->
         <div class="checkout-header">
             <a href="cart.html" class="back-btn">← Retour au panier</a>
             <h1 class="checkout-title">Finaliser la commande</h1>
         </div>
 
-        <div class="checkout-container">
-            <!-- Order Type Selection -->
-            <div class="checkout-section" id="order-type-section">
-                <h2 class="section-title">Type de commande</h2>
-                <div class="order-type-buttons">
-                    <button class="order-type-btn" data-type="dine-in" onclick="selectOrderType('dine-in')">
-                        <span class="type-icon">🪑</span>
-                        <span class="type-name">Sur place</span>
-                        <span class="type-desc">Commander à table</span>
-                    </button>
-                    <button class="order-type-btn" data-type="delivery" onclick="selectOrderType('delivery')">
-                        <span class="type-icon">🚗</span>
-                        <span class="type-name">Livraison</span>
-                        <span class="type-desc">Livraison à domicile</span>
-                    </button>
-                    <button class="order-type-btn" data-type="takeaway" onclick="selectOrderType('takeaway')">
-                        <span class="type-icon">🥡</span>
-                        <span class="type-name">À emporter</span>
-                        <span class="type-desc">Retrait au restaurant</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Customer Info Form -->
-            <div class="checkout-section" id="customer-info-section" style="display: none;">
-                <h2 class="section-title">Vos informations</h2>
-                <form id="checkout-form">
-                    <!-- Name -->
-                    <div class="form-group">
-                        <label for="customer-name">Nom complet *</label>
-                        <input type="text" id="customer-name" required>
-                    </div>
-
-                    <!-- Phone -->
-                    <div class="form-group">
-                        <label for="customer-phone">Numéro de téléphone *</label>
-                        <input type="tel" id="customer-phone" required placeholder="0790 XX XX XX">
-                    </div>
-
-                    <!-- Address (for delivery only) -->
-                    <div class="form-group" id="address-group" style="display: none;">
-                        <label for="customer-address">Adresse complète *</label>
-                        <textarea id="customer-address" rows="3" placeholder="Rue, Quartier, Bâtiment..."></textarea>
-                    </div>
-
-                    <!-- Pickup Time (for takeaway only) -->
-                    <div class="form-group" id="pickup-time-group" style="display: none;">
-                        <label for="pickup-time">Heure de retrait *</label>
-                        <select id="pickup-time">
-                            <option value="now">Dès que possible (~30 min)</option>
-                            <option value="30">Dans 30 minutes</option>
-                            <option value="60">Dans 1 heure</option>
-                            <option value="90">Dans 1h30</option>
-                            <option value="120">Dans 2 heures</option>
-                        </select>
-                    </div>
-
-                    <!-- Special Instructions -->
-                    <div class="form-group">
-                        <label for="special-instructions">Instructions spéciales (optionnel)</label>
-                        <textarea id="special-instructions" rows="3" placeholder="Allergies, préférences..."></textarea>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Order Summary -->
-            <div class="checkout-section" id="order-summary-section" style="display: none;">
-                <h2 class="section-title">Récapitulatif</h2>
-                <div id="order-summary-items"></div>
-                <div class="summary-totals">
-                    <div class="summary-row">
-                        <span>Sous-total</span>
-                        <span id="summary-subtotal">0 DA</span>
-                    </div>
-                    <div class="summary-row" id="delivery-fee-row" style="display: none;">
-                        <span>Frais de livraison</span>
-                        <span id="summary-delivery-fee">0 DA</span>
-                    </div>
-                    <div class="summary-row total">
-                        <span>Total</span>
-                        <span id="summary-total">0 DA</span>
-                    </div>
-                </div>
-
-                <button class="submit-order-btn" onclick="submitOrder()">
-                    Confirmer la commande
+        <!-- Order Type Selection (Step 1) -->
+        <div class="checkout-section" id="order-type-section">
+            <h2 class="section-title">Type de commande</h2>
+            <div class="order-type-buttons" id="order-type-buttons">
+                <button class="order-type-btn" data-type="dine-in" onclick="selectOrderType('dine-in')">
+                    <span class="type-icon">🪑</span>
+                    <span class="type-name">Sur place</span>
+                    <span class="type-desc">Commander à table</span>
+                </button>
+                <button class="order-type-btn" data-type="delivery" onclick="selectOrderType('delivery')">
+                    <span class="type-icon">🚗</span>
+                    <span class="type-name">Livraison</span>
+                    <span class="type-desc">Livraison à domicile</span>
+                </button>
+                <button class="order-type-btn" data-type="takeaway" onclick="selectOrderType('takeaway')">
+                    <span class="type-icon">🥡</span>
+                    <span class="type-name">À emporter</span>
+                    <span class="type-desc">Retrait au restaurant</span>
                 </button>
             </div>
+            <!-- Table Number Display (for auto-filled table ID via URL param) -->
+            <div class="table-number-display" id="table-number-display" style="display: none;"></div>
+        </div>
+
+        <!-- Customer Info Form (Step 2 - dynamically shown) -->
+        <div class="checkout-section" id="customer-info-section" style="display: none;">
+            <h2 class="section-title">Vos informations</h2>
+            <form id="checkout-form">
+                <!-- Name -->
+                <div class="form-group">
+                    <label for="customer-name">Nom complet *</label>
+                    <input type="text" id="customer-name" required>
+                </div>
+
+                <!-- Phone -->
+                <div class="form-group">
+                    <label for="customer-phone">Numéro de téléphone *</label>
+                    <input type="tel" id="customer-phone" required placeholder="0790 XX XX XX">
+                </div>
+
+                <!-- Address (for delivery only) -->
+                <div class="form-group" id="address-group" style="display: none;">
+                    <label for="customer-address">Adresse complète *</label>
+                    <textarea id="customer-address" rows="3" placeholder="Rue, Quartier, Bâtiment..."></textarea>
+                </div>
+
+                <!-- Pickup Time (for takeaway only) -->
+                <div class="form-group" id="pickup-time-group" style="display: none;">
+                    <label for="pickup-time">Heure de retrait *</label>
+                    <select id="pickup-time">
+                        <option value="now">Dès que possible (~30 min)</option>
+                        <option value="30">Dans 30 minutes</option>
+                        <option value="60">Dans 1 heure</option>
+                        <option value="90">Dans 1h30</option>
+                        <option value="120">Dans 2 heures</option>
+                    </select>
+                </div>
+
+                <!-- Special Instructions -->
+                <div class="form-group">
+                    <label for="special-instructions">Instructions spéciales (optionnel)</label>
+                    <textarea id="special-instructions" rows="3" placeholder="Allergies, préférences..."></textarea>
+                </div>
+            </form>
+        </div>
+
+        <!-- Order Summary (always visible after selecting order type) -->
+        <div class="checkout-section" id="order-summary-section" style="display: none;">
+            <h2 class="section-title">Récapitulatif</h2>
+            <div id="order-summary-items"></div>
+            <div class="summary-totals">
+                <div class="summary-row">
+                    <span>Sous-total</span>
+                    <span id="summary-subtotal">0 DA</span>
+                </div>
+                <div class="summary-row" id="delivery-fee-row" style="display: none;">
+                    <span>Frais de livraison</span>
+                    <span id="summary-delivery-fee">0 DA</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total</span>
+                    <span id="summary-total">0 DA</span>
+                </div>
+            </div>
+
+            <button class="submit-order-btn" id="submit-order-btn" onclick="submitOrder()">
+                Confirmer la commande
+            </button>
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="js/menu-data.js"></script>
     <script src="js/cart.js"></script>
-    <script src="js/firebase-config.js"></script>
     <script src="js/order-service.js"></script>
     <script src="js/checkout.js"></script>
 </body>

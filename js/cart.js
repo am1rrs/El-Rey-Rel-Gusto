@@ -256,6 +256,8 @@ class ShoppingCart {
 
 // Initialize cart
 let cart;
+window.getCart = function() { return cart; };
+window.setCart = function(instance) { cart = instance; };
 document.addEventListener('DOMContentLoaded', () => {
     cart = new ShoppingCart();
 

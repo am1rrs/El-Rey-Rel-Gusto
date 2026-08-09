@@ -6,36 +6,102 @@ let filteredOrders = [];
 let orderService = null;
 let lastOrderCount = 0;
 
-document.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeAdminPage);
+} else {
+    initializeAdminPage();
+}
+
+function initializeAdminPage() {
+    bindAdminEvents();
+
     // Check authentication
     if (adminAuth.isAuthenticated) {
         showDashboard();
     } else {
         showLogin();
     }
-});
+}
+
+function bindAdminEvents() {
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.onsubmit = function(event) {
+            event.preventDefault();
+            handleLogin(event);
+        };
+    }
+
+    document.removeEventListener('submit', handleAdminSubmitDelegation);
+    document.addEventListener('submit', handleAdminSubmitDelegation);
+
+    const refreshButton = document.getElementById('refresh-orders-btn');
+    if (refreshButton) {
+        refreshButton.removeEventListener('click', refreshOrders);
+        refreshButton.addEventListener('click', refreshOrders);
+    }
+
+    const logoutButton = document.getElementById('logout-btn');
+    if (logoutButton) {
+        logoutButton.removeEventListener('click', handleLogout);
+        logoutButton.addEventListener('click', handleLogout);
+    }
+
+    const statusFilter = document.getElementById('status-filter');
+    if (statusFilter) {
+        statusFilter.removeEventListener('change', applyFilters);
+        statusFilter.addEventListener('change', applyFilters);
+    }
+
+    const typeFilter = document.getElementById('type-filter');
+    if (typeFilter) {
+        typeFilter.removeEventListener('change', applyFilters);
+        typeFilter.addEventListener('change', applyFilters);
+    }
+
+    const searchFilter = document.getElementById('search-filter');
+    if (searchFilter) {
+        searchFilter.removeEventListener('input', applyFilters);
+        searchFilter.addEventListener('input', applyFilters);
+    }
+}
+
+function handleAdminSubmitDelegation(event) {
+    if (event.target && event.target.id === 'login-form') {
+        handleLogin(event);
+    }
+}
 
 function handleLogin(event) {
-    event.preventDefault();
+    if (event && typeof event.preventDefault === 'function') {
+        event.preventDefault();
+    }
 
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+    const email = document.getElementById('email')?.value || '';
+    const password = document.getElementById('password')?.value || '';
 
     const result = adminAuth.login(email, password);
 
     if (result.success) {
         showDashboard();
-    } else {
-        alert(result.error);
+        return true;
     }
+
+    alert(result.error);
+    return false;
 }
 
 function handleLogout() {
     if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
         adminAuth.logout();
         showLogin();
+        return true;
     }
+    return false;
 }
+
+window.handleLogin = handleLogin;
+window.handleLogout = handleLogout;
 
 function showLogin() {
     document.getElementById('login-screen').style.display = 'flex';
@@ -304,4 +370,6 @@ if (typeof window !== 'undefined') {
     window.updateOrderStatus = updateOrderStatus;
     window.refreshOrders = refreshOrders;
     window.closeOrderModal = closeOrderModal;
+    window.showLogin = showLogin;
+    window.showDashboard = showDashboard;
 }

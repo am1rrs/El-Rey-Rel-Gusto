@@ -16,7 +16,7 @@
         <div class="login-container">
             <h1 class="login-title">El Rey del Gusto</h1>
             <h2 class="login-subtitle">Tableau de Bord Admin</h2>
-            <form id="login-form" onsubmit="handleLogin(event)">
+            <form id="login-form" onsubmit="event.preventDefault(); window.handleLogin && window.handleLogin(event);">
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" required placeholder="admin@elrey.com">
@@ -42,8 +42,8 @@
                 <span class="dashboard-subtitle">Administration</span>
             </div>
             <div class="header-right">
-                <button class="refresh-btn" onclick="refreshOrders()">🔄 Actualiser</button>
-                <button class="logout-btn" onclick="handleLogout()">Déconnexion</button>
+                <button type="button" class="refresh-btn" id="refresh-orders-btn">🔄 Actualiser</button>
+                <button type="button" class="logout-btn" id="logout-btn">Déconnexion</button>
             </div>
         </header>
 
@@ -83,7 +83,7 @@
         <div class="filters-container">
             <div class="filter-group">
                 <label>Status:</label>
-                <select id="status-filter" onchange="applyFilters()">
+                <select id="status-filter">
                     <option value="all">Tous</option>
                     <option value="pending">En attente</option>
                     <option value="preparing">En préparation</option>
@@ -94,7 +94,7 @@
             </div>
             <div class="filter-group">
                 <label>Type:</label>
-                <select id="type-filter" onchange="applyFilters()">
+                <select id="type-filter">
                     <option value="all">Tous</option>
                     <option value="dine-in">Sur place</option>
                     <option value="delivery">Livraison</option>
@@ -103,7 +103,7 @@
             </div>
             <div class="filter-group">
                 <label>Recherche:</label>
-                <input type="text" id="search-filter" placeholder="Numéro de commande ou téléphone" oninput="applyFilters()">
+                <input type="text" id="search-filter" placeholder="Numéro de commande ou téléphone">
             </div>
         </div>
 
@@ -133,6 +133,51 @@
     <script src="../js/firebase-config.js"></script>
     <script src="../js/order-service.js"></script>
     <script src="auth.js"></script>
+    <script>
+        window.adminLogin = function (event) {
+            if (event && typeof event.preventDefault === 'function') {
+                event.preventDefault();
+            }
+
+            const email = document.getElementById('email')?.value || '';
+            const password = document.getElementById('password')?.value || '';
+            const result = window.adminAuth ? window.adminAuth.login(email, password) : { success: false, error: 'Auth unavailable' };
+
+            if (result.success) {
+                const loginScreen = document.getElementById('login-screen');
+                const dashboard = document.getElementById('dashboard');
+                if (loginScreen) loginScreen.style.display = 'none';
+                if (dashboard) dashboard.style.display = 'block';
+                return true;
+            }
+
+            alert(result.error || 'Identifiants incorrects');
+            return false;
+        };
+
+        window.handleLogin = window.adminLogin;
+        window.handleLogout = function () {
+            if (!confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                return false;
+            }
+
+            if (window.adminAuth) {
+                window.adminAuth.logout();
+            }
+
+            const loginScreen = document.getElementById('login-screen');
+            const dashboard = document.getElementById('dashboard');
+            if (loginScreen) loginScreen.style.display = 'flex';
+            if (dashboard) dashboard.style.display = 'none';
+            return true;
+        };
+
+        window.refreshOrders = window.refreshOrders || function () {
+            if (typeof window.loadAdminOrders === 'function') {
+                return window.loadAdminOrders();
+            }
+        };
+    </script>
     <script src="dashboard.js"></script>
 </body>
 </html>

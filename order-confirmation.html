@@ -41,7 +41,7 @@
             </div>
 
             <div class="confirmation-actions">
-                <a href="menu.html" class="action-btn primary">Retour au menu</a>
+                <a href="index.html" class="action-btn primary">Retour au menu</a>
                 <button onclick="window.print()" class="action-btn secondary">Imprimer</button>
             </div>
         </div>
@@ -53,7 +53,7 @@
             const orderId = urlParams.get('orderId');
 
             if (!orderId) {
-                window.location.href = 'menu.html';
+                window.location.href = 'index.html';
                 return;
             }
 
@@ -62,7 +62,7 @@
             const order = orders.find(o => o.orderId === orderId);
 
             if (!order) {
-                window.location.href = 'menu.html';
+                window.location.href = 'index.html';
                 return;
             }
 

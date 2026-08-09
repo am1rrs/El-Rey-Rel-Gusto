@@ -3,10 +3,14 @@
 // Updated to open WhatsApp with the order details after successful submission
 
 let selectedOrderType = null;
-let cart = null;
+// cart is declared in cart.js and accessible via window.getCart()
 
 document.addEventListener('DOMContentLoaded', () => {
     cart = window.getCart();
+    if (!cart) {
+        console.error('Cart instance not available on window.getCart();');
+        return;
+    }
 
     // Check if cart is empty
     if (!cart || cart.items.length === 0) {
@@ -61,15 +65,12 @@ function selectOrderType(type) {
     document.getElementById('order-summary-section').style.display = 'block';
 }
 
-function showTableNumber(tableNum) {
-    const section = document.getElementById('order-type-section');
-    const display = document.createElement('div');
-    display.className = 'table-number-display';
-    display.innerHTML = `🪑 Table ${tableNum}`;
-    section.insertBefore(display, section.firstChild);
-
-    // Hide order type buttons
-    document.querySelector('.order-type-buttons').style.display = 'none';
+function showTableNumber(tableNumber) {
+    const display = document.getElementById('table-number-display');
+    if (display) {
+        display.textContent = `Table #${tableNumber}`;
+        display.style.display = 'block';
+    }
 }
 
 function renderOrderSummary() {
@@ -203,51 +204,17 @@ async function submitOrder() {
         return;
     }
 
-    // ==== New logic: Open WhatsApp with the order summary ====
-    const customerPhone = orderData.customer.phone.replace(/\s/g, '');
-    const customerName = orderData.customer.name;
-    const orderType = orderData.orderType;
-    const pickupTime = orderData.pickupTime;
-    const specialInstructions = orderData.specialInstructions;
-
-    // Build the WhatsApp message
-    const whatsappMessage = `
-*طلب جديد من مطعم El Rey del Gusto* %0A
-%0A_الاسم_: ${customerName} %0A
-_رقم الهاتف_: ${customerPhone} %0A
-_نوع الطلب_: ${orderType} %0A`;
-
-    if (orderType === 'takeaway') {
-        whatsappMessage += `_وقت الاستلام_: ${pickupTime} %0A`;
-    } else if (orderType === 'delivery') {
-        whatsappMessage += `_عنوان التسليم_: ${orderData.customer.address} %0A`;
-    }
-
-    whatsappMessage += `%0A_الإجمالي_: ${orderData.total} د.إ %0A%0A`;
-
-    if (specialInstructions) {
-        whatsappMessage += `_ملاحظات خاصة_: ${specialInstructions} %0A`;
-    }
-
-    whatsappMessage += `%0A_شكراً لاختيارنا!_`;
-
-    const whatsappUrl = `https://wa.me/${customerPhone}?text=${encodeURIComponent(whatsappMessage)}`;
-
-    // Open WhatsApp in a new tab/window
-    window.open(whatsappUrl, '_blank');
-
-    // Save order locally (optional)
+    // Save the order locally and show the in-site confirmation page
     saveOrderLocally(orderData);
 
     // Clear cart after success
     cart.clear();
 
-    // Optionally redirect after a short delay
+    hideLoading();
+
     setTimeout(() => {
-        hideLoading();
-        // You may keep the user on the same page or go to a thank‑you page
-        // Example: window.location.href = 'thankyou.html';
-    }, 1500);
+        window.location.href = `order-confirmation.html?orderId=${orderData.orderId}`;
+    }, 500);
 }
 
 function generateOrderId() {
