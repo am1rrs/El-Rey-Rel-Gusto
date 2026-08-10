@@ -18,13 +18,16 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Check for table parameter (dine-in)
+    // Dine-in table: picked up either from a direct ?table= URL param (QR scan)
+    // or from the table number already saved on the cart by the menu page
+    // (QR scan → index.html?table=N → cart carries the table through).
     const urlParams = new URLSearchParams(window.location.search);
     const tableParam = urlParams.get('table');
+    const scannedTable = tableParam ? parseInt(tableParam) : (cart.tableNumber || null);
 
-    if (tableParam) {
+    if (scannedTable) {
         selectOrderType('dine-in');
-        showTableNumber(parseInt(tableParam));
+        showTableNumber(scannedTable);
     }
 });
 
@@ -45,6 +48,21 @@ function selectOrderType(type) {
     // Show/hide fields based on order type
     const addressGroup = document.getElementById('address-group');
     const pickupTimeGroup = document.getElementById('pickup-time-group');
+    const nameGroup = document.getElementById('name-group');
+    const phoneGroup = document.getElementById('phone-group');
+    const phoneInput = document.getElementById('customer-phone');
+
+    // Dine-in customers order by table — no name or phone needed.
+    const isDineIn = type === 'dine-in';
+    if (nameGroup) nameGroup.style.display = isDineIn ? 'none' : 'block';
+    if (phoneGroup) phoneGroup.style.display = isDineIn ? 'none' : 'block';
+    if (phoneInput) phoneInput.required = !isDineIn;
+
+    // Keep the table display in sync: shown only for dine-in with a known table.
+    const tableDisplay = document.getElementById('table-number-display');
+    if (tableDisplay) {
+        tableDisplay.style.display = (isDineIn && cart.tableNumber) ? 'block' : 'none';
+    }
 
     if (type === 'delivery') {
         addressGroup.style.display = 'block';
@@ -116,26 +134,26 @@ function renderOrderSummary() {
 }
 
 function validateForm() {
-    const form = document.getElementById('checkout-form');
     const name = document.getElementById('customer-name').value.trim();
     const phone = document.getElementById('customer-phone').value.trim();
     const address = document.getElementById('customer-address').value.trim();
 
-    if (!name) {
-        showError('الرجاء إدخال اسمك');
-        return false;
-    }
+    // Name is optional for every order type.
 
-    if (!phone) {
+    // Phone is required for delivery / takeaway (to contact the customer),
+    // but NOT for dine-in — those customers order by table.
+    if (selectedOrderType !== 'dine-in' && !phone) {
         showError('الرجاء إدخال رقم هاتفك');
         return false;
     }
 
-    // Validate phone format (Algerian)
-    const phoneRegex = /^(0)(5|6|7)[0-9]{8}$/;
-    if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
-        showError('رقم هاتف غير صالح (الصيغة: 07XX XX XX XX)');
-        return false;
+    // Validate phone format (Algerian) when provided
+    if (phone) {
+        const phoneRegex = /^(0)(5|6|7)[0-9]{8}$/;
+        if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+            showError('رقم هاتف غير صالح (الصيغة: 07XX XX XX XX)');
+            return false;
+        }
     }
 
     if (selectedOrderType === 'delivery' && !address) {
@@ -185,19 +203,22 @@ async function submitOrder() {
     showLoading();
 
     // Prepare order data
+    const nameValue = document.getElementById('customer-name').value.trim();
+    const phoneValue = document.getElementById('customer-phone').value.trim();
+
     const orderData = {
         orderId: generateOrderId(),
         timestamp: Date.now(),
         status: 'pending',
 
         customer: {
-            name: document.getElementById('customer-name').value.trim(),
-            phone: document.getElementById('customer-phone').value.trim(),
+            name: nameValue || null,
+            phone: phoneValue || null,
             address: selectedOrderType === 'delivery' ? document.getElementById('customer-address').value.trim() : null
         },
 
         orderType: selectedOrderType,
-        tableNumber: cart.tableNumber || null,
+        tableNumber: selectedOrderType === 'dine-in' ? (cart.tableNumber || null) : null,
         pickupTime: selectedOrderType === 'takeaway' ? document.getElementById('pickup-time').value : null,
 
         items: cart.items,

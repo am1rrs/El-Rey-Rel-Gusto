@@ -58,21 +58,21 @@
 
         <!-- Stats Cards -->
         <div class="stats-container">
-            <div class="stat-card">
+            <div class="stat-card clickable" data-status="pending" role="button" tabindex="0">
                 <div class="stat-icon">📋</div>
                 <div class="stat-info">
                     <div class="stat-value" id="stat-pending">0</div>
                     <div class="stat-label" data-i18n="stats.pending">Pending</div>
                 </div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card clickable" data-status="preparing" role="button" tabindex="0">
                 <div class="stat-icon">👨‍🍳</div>
                 <div class="stat-info">
                     <div class="stat-value" id="stat-preparing">0</div>
                     <div class="stat-label" data-i18n="stats.preparing">In preparation</div>
                 </div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card clickable" data-status="ready" role="button" tabindex="0">
                 <div class="stat-icon">✅</div>
                 <div class="stat-info">
                     <div class="stat-value" id="stat-ready">0</div>
@@ -91,15 +91,14 @@
         <!-- Filters -->
         <div class="filters-container">
             <div class="filter-group">
-                <label for="status-filter" data-i18n="filters.status">Status:</label>
-                <select id="status-filter">
-                    <option value="all" data-i18n="filters.all">All</option>
-                    <option value="pending" data-i18n="status.pending">Pending</option>
-                    <option value="preparing" data-i18n="status.preparing">In preparation</option>
-                    <option value="ready" data-i18n="status.ready">Ready</option>
-                    <option value="delivered" data-i18n="status.delivered">Delivered</option>
-                    <option value="cancelled" data-i18n="status.cancelled">Cancelled</option>
-                </select>
+                <label data-i18n="filters.status">Status:</label>
+                <div class="status-checkboxes" id="status-checkboxes">
+                    <label class="chk"><input type="checkbox" class="status-checkbox" value="pending"><span data-i18n="status.pending">Pending</span></label>
+                    <label class="chk"><input type="checkbox" class="status-checkbox" value="preparing"><span data-i18n="status.preparing">In preparation</span></label>
+                    <label class="chk"><input type="checkbox" class="status-checkbox" value="ready"><span data-i18n="status.ready">Ready</span></label>
+                    <label class="chk"><input type="checkbox" class="status-checkbox" value="delivered"><span data-i18n="status.delivered">Delivered</span></label>
+                    <label class="chk"><input type="checkbox" class="status-checkbox" value="cancelled"><span data-i18n="status.cancelled">Cancelled</span></label>
+                </div>
             </div>
             <div class="filter-group">
                 <label for="type-filter" data-i18n="filters.type">Type:</label>
@@ -111,8 +110,39 @@
                 </select>
             </div>
             <div class="filter-group">
+                <label for="date-filter" data-i18n="filters.dateRange">Date range:</label>
+                <select id="date-filter">
+                    <option value="today" data-i18n="dateRange.today">Today</option>
+                    <option value="week" data-i18n="dateRange.week">This week</option>
+                    <option value="month" data-i18n="dateRange.month">This month</option>
+                    <option value="custom" data-i18n="dateRange.custom">Custom</option>
+                </select>
+                <div class="custom-date-range" id="custom-date-range" hidden>
+                    <input type="date" id="date-from" data-i18n-ph="filters.dateFrom">
+                    <input type="date" id="date-to" data-i18n-ph="filters.dateTo">
+                </div>
+            </div>
+            <div class="filter-group">
+                <label for="payment-status-filter" data-i18n="filters.paymentStatus">Payment status:</label>
+                <select id="payment-status-filter">
+                    <option value="all" data-i18n="filters.all">All</option>
+                    <option value="pending" data-i18n="payment.pending">Pending</option>
+                    <option value="paid" data-i18n="payment.paid">Paid</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="payment-method-filter" data-i18n="filters.paymentMethod">Payment method:</label>
+                <select id="payment-method-filter">
+                    <option value="all" data-i18n="filters.all">All</option>
+                    <option value="cash" data-i18n="payment.cash">Cash</option>
+                </select>
+            </div>
+            <div class="filter-group">
                 <label for="search-filter" data-i18n="filters.search">Search:</label>
-                <input type="text" id="search-filter" data-i18n-ph="filters.searchPlaceholder" placeholder="Order number or phone">
+                <input type="text" id="search-filter" data-i18n-ph="filters.searchPlaceholder" placeholder="Order, phone, item, address...">
+            </div>
+            <div class="filter-group filter-actions">
+                <button type="button" id="clear-filters-btn" class="btn-tool" hidden data-i18n="filters.clear">Clear filters</button>
             </div>
         </div>
 
@@ -128,6 +158,7 @@
         <!-- Orders Table -->
         <div class="orders-container">
             <h2 class="section-title" data-i18n="orders.title">Orders</h2>
+            <span id="results-count" class="results-count"></span>
             <div class="table-wrapper">
                 <table id="orders-table" class="orders-table">
                     <thead>

@@ -31,6 +31,25 @@
     // Last status banner state (so it can be re-translated on admin:i18n)
     var lastStatus = null; // { type: 'ok'|'warn'|'noAccess'|'error', count, message }
 
+    // Filter state (centralized — read by applyFilters, written by collectFilterControls)
+    var FILTERS_STORAGE_KEY = 'adminFilters';
+    var searchDebounceTimer = null;
+
+    function defaultFilterState() {
+        return {
+            statuses: [],      // [] = all; array of selected status values
+            type: 'all',
+            search: '',
+            dateRange: 'today', // today | week | month | custom
+            dateFrom: '',
+            dateTo: '',
+            paymentStatus: 'all',
+            paymentMethod: 'all'
+        };
+    }
+
+    var filterState = defaultFilterState();
+
     // ---------------------------------------------------------------------
     // i18n helpers — delegate to window.adminI18n with inline fallbacks so the
     // dashboard still renders if i18n.js failed to load.
@@ -74,6 +93,224 @@
         return isNaN(n) ? 0 : n;
     }
 
+    // ---------------------------------------------------------------------
+    // Filter helpers
+    // ---------------------------------------------------------------------
+    function collectFilterControls() {
+        // Status checkboxes
+        var checkboxes = document.querySelectorAll('.status-checkbox');
+        var selectedStatuses = [];
+        for (var i = 0; i < checkboxes.length; i++) {
+            if (checkboxes[i].checked) {
+                selectedStatuses.push(checkboxes[i].value);
+            }
+        }
+        filterState.statuses = selectedStatuses;
+
+        // Type
+        var typeEl = document.getElementById('type-filter');
+        filterState.type = typeEl ? typeEl.value : 'all';
+
+        // Search
+        var searchEl = document.getElementById('search-filter');
+        filterState.search = searchEl ? searchEl.value : '';
+
+        // Date range
+        var dateFilterEl = document.getElementById('date-filter');
+        filterState.dateRange = dateFilterEl ? dateFilterEl.value : 'today';
+        var dateFromEl = document.getElementById('date-from');
+        var dateToEl = document.getElementById('date-to');
+        filterState.dateFrom = dateFromEl ? dateFromEl.value : '';
+        filterState.dateTo = dateToEl ? dateToEl.value : '';
+
+        // Custom date range visibility
+        var customRangeEl = document.getElementById('custom-date-range');
+        if (customRangeEl) {
+            customRangeEl.hidden = filterState.dateRange !== 'custom';
+        }
+
+        // Payment status
+        var paymentStatusEl = document.getElementById('payment-status-filter');
+        filterState.paymentStatus = paymentStatusEl ? paymentStatusEl.value : 'all';
+
+        // Payment method
+        var paymentMethodEl = document.getElementById('payment-method-filter');
+        filterState.paymentMethod = paymentMethodEl ? paymentMethodEl.value : 'all';
+    }
+
+    function syncFilterControls() {
+        // Status checkboxes
+        var checkboxes = document.querySelectorAll('.status-checkbox');
+        for (var i = 0; i < checkboxes.length; i++) {
+            checkboxes[i].checked = filterState.statuses.indexOf(checkboxes[i].value) >= 0;
+        }
+
+        // Type
+        var typeEl = document.getElementById('type-filter');
+        if (typeEl) typeEl.value = filterState.type;
+
+        // Search
+        var searchEl = document.getElementById('search-filter');
+        if (searchEl) searchEl.value = filterState.search;
+
+        // Date range
+        var dateFilterEl = document.getElementById('date-filter');
+        if (dateFilterEl) dateFilterEl.value = filterState.dateRange;
+        var dateFromEl = document.getElementById('date-from');
+        var dateToEl = document.getElementById('date-to');
+        if (dateFromEl) dateFromEl.value = filterState.dateFrom;
+        if (dateToEl) dateToEl.value = filterState.dateTo;
+
+        // Custom date range visibility
+        var customRangeEl = document.getElementById('custom-date-range');
+        if (customRangeEl) {
+            customRangeEl.hidden = filterState.dateRange !== 'custom';
+        }
+
+        // Payment status
+        var paymentStatusEl = document.getElementById('payment-status-filter');
+        if (paymentStatusEl) paymentStatusEl.value = filterState.paymentStatus;
+
+        // Payment method
+        var paymentMethodEl = document.getElementById('payment-method-filter');
+        if (paymentMethodEl) paymentMethodEl.value = filterState.paymentMethod;
+    }
+
+    function saveFilters() {
+        try {
+            localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify({ v: 1, state: filterState }));
+        } catch (e) { /* private mode */ }
+    }
+
+    function loadFilters() {
+        try {
+            var saved = localStorage.getItem(FILTERS_STORAGE_KEY);
+            if (!saved) return;
+            var parsed = JSON.parse(saved);
+            if (parsed && parsed.state) {
+                var s = parsed.state;
+                filterState.statuses = Array.isArray(s.statuses) ? s.statuses : [];
+                filterState.type = s.type || 'all';
+                filterState.search = s.search || '';
+                filterState.dateRange = s.dateRange || 'today';
+                filterState.dateFrom = s.dateFrom || '';
+                filterState.dateTo = s.dateTo || '';
+                filterState.paymentStatus = s.paymentStatus || 'all';
+                filterState.paymentMethod = s.paymentMethod || 'all';
+            }
+        } catch (e) { /* ignore corrupted data */ }
+    }
+
+    function resetFilters() {
+        filterState = defaultFilterState();
+        syncFilterControls();
+        applyFilters();
+        saveFilters();
+        updateFilterUI();
+    }
+
+    function isFilterActive() {
+        return filterState.statuses.length > 0 ||
+            filterState.type !== 'all' ||
+            filterState.search !== '' ||
+            filterState.dateRange !== 'today' ||
+            filterState.paymentStatus !== 'all' ||
+            filterState.paymentMethod !== 'all';
+    }
+
+    function updateFilterUI() {
+        var clearBtn = document.getElementById('clear-filters-btn');
+        if (clearBtn) {
+            clearBtn.hidden = !isFilterActive();
+        }
+
+        var resultsEl = document.getElementById('results-count');
+        if (resultsEl) {
+            resultsEl.textContent = t('filters.resultsCount', {
+                count: filteredOrders.length,
+                total: allOrders.length
+            });
+        }
+
+        // Update stat cards active state
+        var statCards = document.querySelectorAll('.stat-card[data-status]');
+        for (var i = 0; i < statCards.length; i++) {
+            var status = statCards[i].getAttribute('data-status');
+            var isActive = filterState.statuses.length === 1 && filterState.statuses[0] === status;
+            statCards[i].classList.toggle('active', isActive);
+        }
+    }
+
+    // Toggle the status filter from a stat card: tapping the active card again
+    // clears the status filter (shows all).
+    function toggleStatusFilter(status) {
+        if (filterState.statuses.length === 1 && filterState.statuses[0] === status) {
+            filterState.statuses = [];
+        } else {
+            filterState.statuses = [status];
+        }
+        syncFilterControls();
+        applyFilters();
+        saveFilters();
+    }
+
+    // ---------------------------------------------------------------------
+    // Arabic text normalization for search
+    // ---------------------------------------------------------------------
+    function normalizeArabic(str) {
+        return String(str == null ? '' : str)
+            .replace(/[أإآ]/g, 'ا')
+            .toLowerCase();
+    }
+
+    // ---------------------------------------------------------------------
+    // Date range helpers
+    // ---------------------------------------------------------------------
+    function dateRangeStart(range) {
+        var now = new Date();
+        var y = now.getFullYear();
+        var m = now.getMonth();
+        var d = now.getDate();
+
+        if (range === 'today') {
+            return new Date(y, m, d).getTime();
+        } else if (range === 'week') {
+            // Week starts on Monday (ISO)
+            var day = now.getDay();
+            var diff = (day === 0 ? 6 : day - 1); // days since Monday
+            return new Date(y, m, d - diff).getTime();
+        } else if (range === 'month') {
+            return new Date(y, m, 1).getTime();
+        }
+        return 0; // custom or unknown
+    }
+
+    function dateRangeEnd(range) {
+        if (range === 'custom') {
+            var toEl = document.getElementById('date-to');
+            var toVal = toEl ? toEl.value : '';
+            if (toVal) {
+                return new Date(toVal + 'T23:59:59.999').getTime();
+            }
+            return Date.now() + 86400000; // no end date: include the future
+        }
+        // End of the current day (today / week / month share the same ceiling).
+        var now = new Date();
+        return new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() - 1;
+    }
+
+    function customDateFromMs() {
+        var fromEl = document.getElementById('date-from');
+        var fromVal = fromEl ? fromEl.value : '';
+        return fromVal ? new Date(fromVal + 'T00:00:00').getTime() : 0;
+    }
+
+    function customDateToMs() {
+        var toEl = document.getElementById('date-to');
+        var toVal = toEl ? toEl.value : '';
+        return toVal ? new Date(toVal + 'T23:59:59.999').getTime() : Date.now() + 86400000;
+    }
+
     // Reuse the shared normalization exported by js/order-service.js
     // (window.orderTimestampMs), with an inline fallback so the dashboard still
     // works even if that script failed to load.
@@ -101,6 +338,8 @@
     }
 
     function initializeAdminPage() {
+        loadFilters();
+        syncFilterControls();
         bindAdminEvents();
 
         // Stop the Firestore listener when the page is left, so a hidden tab
@@ -168,19 +407,103 @@
             logoutButton.addEventListener('click', handleLogout);
         }
 
-        var statusFilter = document.getElementById('status-filter');
-        if (statusFilter) {
-            statusFilter.addEventListener('change', applyFilters);
+        // Status checkboxes (delegated)
+        var statusCheckboxes = document.getElementById('status-checkboxes');
+        if (statusCheckboxes) {
+            statusCheckboxes.addEventListener('change', function () {
+                collectFilterControls();
+                applyFilters();
+                saveFilters();
+            });
         }
 
         var typeFilter = document.getElementById('type-filter');
         if (typeFilter) {
-            typeFilter.addEventListener('change', applyFilters);
+            typeFilter.addEventListener('change', function () {
+                collectFilterControls();
+                applyFilters();
+                saveFilters();
+            });
         }
 
         var searchFilter = document.getElementById('search-filter');
         if (searchFilter) {
-            searchFilter.addEventListener('input', applyFilters);
+            searchFilter.addEventListener('input', function () {
+                clearTimeout(searchDebounceTimer);
+                searchDebounceTimer = setTimeout(function () {
+                    collectFilterControls();
+                    applyFilters();
+                    saveFilters();
+                }, 300);
+            });
+        }
+
+        // Date range filter
+        var dateFilter = document.getElementById('date-filter');
+        if (dateFilter) {
+            dateFilter.addEventListener('change', function () {
+                collectFilterControls();
+                applyFilters();
+                saveFilters();
+            });
+        }
+
+        // Custom date inputs
+        var dateFrom = document.getElementById('date-from');
+        var dateTo = document.getElementById('date-to');
+        if (dateFrom) {
+            dateFrom.addEventListener('change', function () {
+                collectFilterControls();
+                applyFilters();
+                saveFilters();
+            });
+        }
+        if (dateTo) {
+            dateTo.addEventListener('change', function () {
+                collectFilterControls();
+                applyFilters();
+                saveFilters();
+            });
+        }
+
+        // Payment status filter
+        var paymentStatusFilter = document.getElementById('payment-status-filter');
+        if (paymentStatusFilter) {
+            paymentStatusFilter.addEventListener('change', function () {
+                collectFilterControls();
+                applyFilters();
+                saveFilters();
+            });
+        }
+
+        // Payment method filter
+        var paymentMethodFilter = document.getElementById('payment-method-filter');
+        if (paymentMethodFilter) {
+            paymentMethodFilter.addEventListener('change', function () {
+                collectFilterControls();
+                applyFilters();
+                saveFilters();
+            });
+        }
+
+        // Clear filters button
+        var clearFiltersBtn = document.getElementById('clear-filters-btn');
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', resetFilters);
+        }
+
+        // Clickable stat cards (filter by status) — mouse + keyboard (Enter/Space).
+        var statCards = document.querySelectorAll('.stat-card[data-status]');
+        for (var i = 0; i < statCards.length; i++) {
+            statCards[i].addEventListener('click', function () {
+                toggleStatusFilter(this.getAttribute('data-status'));
+            });
+            statCards[i].addEventListener('keydown', function (event) {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    toggleStatusFilter(this.getAttribute('data-status'));
+                }
+            });
         }
 
         var pageSizeSelect = document.getElementById('page-size');
@@ -300,8 +623,16 @@
             })
             .catch(function (error) {
                 if (btn) { btn.disabled = false; }
+                // Always log the raw error: the mapped message may be generic, and
+                // the code is the fastest way to diagnose a console misconfiguration.
+                console.error('[admin] Login error:', error && error.code, error && error.message, error);
                 var key = window.adminAuth.loginErrorKey(error);
                 var message = t(key);
+                // If the error code is unmapped, surface it next to the generic
+                // message so the real cause is never hidden.
+                if (key === 'login.error.generic' && error && error.code) {
+                    message += ' (' + error.code + ')';
+                }
                 if (errorEl) { errorEl.textContent = message; errorEl.hidden = false; }
             });
 
@@ -531,7 +862,12 @@
         var pending = todayOrders.filter(function (o) { return o.status === 'pending'; }).length;
         var preparing = todayOrders.filter(function (o) { return o.status === 'preparing'; }).length;
         var ready = todayOrders.filter(function (o) { return o.status === 'ready'; }).length;
-        var total = todayOrders.reduce(function (sum, o) { return sum + safeNumber(o.total); }, 0);
+        // Daily profit counts only CONFIRMED orders — orders the admin has accepted
+        // (any status except pending/cancelled). A fresh order must not raise the
+        // total until the admin confirms it.
+        var total = todayOrders
+            .filter(function (o) { return o.status !== 'pending' && o.status !== 'cancelled'; })
+            .reduce(function (sum, o) { return sum + safeNumber(o.total); }, 0);
 
         var pendingEl = document.getElementById('stat-pending');
         var preparingEl = document.getElementById('stat-preparing');
@@ -547,34 +883,68 @@
     // Filtering + sorting + pagination
     // ---------------------------------------------------------------------
     function applyFilters() {
-        var statusFilterEl = document.getElementById('status-filter');
-        var typeFilterEl = document.getElementById('type-filter');
-        var searchFilterEl = document.getElementById('search-filter');
-
-        var statusFilter = statusFilterEl ? statusFilterEl.value : 'all';
-        var typeFilter = typeFilterEl ? typeFilterEl.value : 'all';
-        var searchQuery = (searchFilterEl ? searchFilterEl.value : '').toLowerCase();
+        var searchQuery = normalizeArabic(filterState.search);
 
         filteredOrders = allOrders.filter(function (order) {
             // A single malformed order must never break the whole list.
             try {
-                if (statusFilter !== 'all' && (order.status || '') !== statusFilter) {
+                // Status filter (multi-select: empty = all)
+                if (filterState.statuses.length > 0 && filterState.statuses.indexOf(order.status || '') === -1) {
                     return false;
                 }
 
-                if (typeFilter !== 'all' && (order.orderType || '') !== typeFilter) {
+                // Type filter
+                if (filterState.type !== 'all' && (order.orderType || '') !== filterState.type) {
                     return false;
                 }
 
+                // Date range filter (today / week / month / custom)
+                var orderTime = orderTimestampMs(order);
+                var rangeStart, rangeEnd;
+                if (filterState.dateRange === 'custom') {
+                    rangeStart = customDateFromMs();
+                    rangeEnd = customDateToMs();
+                } else {
+                    rangeStart = dateRangeStart(filterState.dateRange);
+                    rangeEnd = dateRangeEnd(filterState.dateRange);
+                }
+                if (orderTime < rangeStart || orderTime > rangeEnd) {
+                    return false;
+                }
+
+                // Payment status filter
+                if (filterState.paymentStatus !== 'all' && (order.paymentStatus || '') !== filterState.paymentStatus) {
+                    return false;
+                }
+
+                // Payment method filter
+                if (filterState.paymentMethod !== 'all' && (order.paymentMethod || '') !== filterState.paymentMethod) {
+                    return false;
+                }
+
+                // Search filter (expanded scope + Arabic normalization)
                 if (searchQuery) {
-                    var orderId = (order.orderId || '').toLowerCase();
-                    var phone = ((order.customer && order.customer.phone) || '').toLowerCase();
-                    var name = ((order.customer && order.customer.name) || '').toLowerCase();
-                    if (orderId.indexOf(searchQuery) === -1 &&
-                        phone.indexOf(searchQuery) === -1 &&
-                        name.indexOf(searchQuery) === -1) {
-                        return false;
+                    var haystack = [
+                        order.orderId || '',
+                        (order.customer && order.customer.name) || '',
+                        (order.customer && order.customer.phone) || '',
+                        (order.customer && order.customer.address) || '',
+                        order.tableNumber != null ? String(order.tableNumber) : '',
+                        order.specialInstructions || ''
+                    ];
+                    // Add item names
+                    var items = order.items || [];
+                    for (var i = 0; i < items.length; i++) {
+                        if (items[i].name) haystack.push(items[i].name);
                     }
+                    var found = false;
+                    for (var j = 0; j < haystack.length; j++) {
+                        if (normalizeArabic(haystack[j]).indexOf(searchQuery) >= 0) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) return false;
                 }
 
                 return true;
@@ -589,6 +959,7 @@
         updateSortIndicators();
         renderTable();
         updatePaginationInfo();
+        updateFilterUI();
     }
 
     function sortOrders() {

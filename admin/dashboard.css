@@ -19,6 +19,12 @@
     box-sizing: border-box;
 }
 
+/* The hidden attribute must always win, even over display:-flex rules
+   (e.g. .custom-date-range), otherwise author styles override the UA default. */
+[hidden] {
+    display: none !important;
+}
+
 body {
     font-family: 'Poppins', sans-serif;
     background-color: var(--bg-cream);
@@ -251,6 +257,33 @@ body {
     font-size: 0.9rem;
 }
 
+.stat-card.clickable {
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card.clickable:hover {
+    border-color: var(--price-copper);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px var(--shadow);
+}
+
+.stat-card.clickable.active {
+    border-color: var(--price-copper);
+    background: #FBF5EE;
+    box-shadow: 0 4px 16px var(--shadow);
+}
+
+.stat-card.clickable.active .stat-value {
+    color: var(--price-copper);
+}
+
+.stat-card.clickable:focus-visible {
+    outline: 2px solid var(--price-copper);
+    outline-offset: 2px;
+}
+
 /* Filters */
 .filters-container {
     padding-inline: 30px;
@@ -277,6 +310,71 @@ body {
     border: 2px solid var(--decorative-gray);
     border-radius: 8px;
     font-size: 1rem;
+}
+
+/* Multi-select status checkboxes */
+.status-checkboxes {
+    display: flex;
+    gap: 6px 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 4px 0;
+}
+
+.status-checkboxes .chk {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text-dark-gray);
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.status-checkboxes .chk input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    padding: 0;
+    accent-color: var(--price-copper);
+    cursor: pointer;
+}
+
+/* Custom date range inputs */
+.custom-date-range {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.custom-date-range input[type="date"] {
+    flex: 1 1 130px;
+    min-width: 130px;
+}
+
+/* Clear filters button + actions row */
+.filter-actions {
+    justify-content: flex-end;
+    align-self: flex-end;
+}
+
+#clear-filters-btn {
+    padding: 10px 16px;
+    border: 2px solid var(--danger);
+    background: white;
+    color: var(--danger);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#clear-filters-btn:hover {
+    background: var(--danger);
+    color: white;
 }
 
 /* Toolbar (export / print) */
@@ -307,6 +405,16 @@ body {
 .section-title {
     font-size: 1.5rem;
     margin-bottom: 20px;
+}
+
+.results-count {
+    display: inline-block;
+    margin-bottom: 12px;
+    font-size: 0.88rem;
+    color: var(--text-dark-gray);
+    background: #F3EFE7;
+    padding: 4px 12px;
+    border-radius: 20px;
 }
 
 /* Orders Table */

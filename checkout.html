@@ -46,14 +46,14 @@
         <div class="checkout-section" id="customer-info-section" style="display: none;">
             <h2 class="section-title">Vos informations</h2>
             <form id="checkout-form">
-                <!-- Name -->
-                <div class="form-group">
-                    <label for="customer-name">Nom complet *</label>
-                    <input type="text" id="customer-name" required>
+                <!-- Name (optional — never required) -->
+                <div class="form-group" id="name-group">
+                    <label for="customer-name">Nom complet (optionnel)</label>
+                    <input type="text" id="customer-name" autocomplete="name">
                 </div>
 
-                <!-- Phone -->
-                <div class="form-group">
+                <!-- Phone (hidden for dine-in; required for delivery / takeaway) -->
+                <div class="form-group" id="phone-group">
                     <label for="customer-phone">Numéro de téléphone *</label>
                     <input type="tel" id="customer-phone" required placeholder="0790 XX XX XX">
                 </div>

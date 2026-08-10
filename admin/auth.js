@@ -23,6 +23,20 @@
         if (initialized) return;
         initialized = true;
 
+        // Dev mode: skip Firebase Auth entirely
+        if (window.firebaseConfig && window.firebaseConfig.SKIP_AUTH) {
+            console.warn('[auth] Dev mode: skipping Firebase Auth');
+            authReady = true;
+            currentUser = { uid: 'dev-admin', email: 'admin@elrey.com' };
+            // Trigger pending handlers
+            var handlers = pendingHandlers.slice();
+            pendingHandlers = [];
+            handlers.forEach(function (fn) {
+                try { fn(currentUser); } catch (error) { console.error('[auth] handler error:', error); }
+            });
+            return;
+        }
+
         if (typeof firebase === 'undefined' || typeof firebase.auth !== 'function') {
             console.error('[auth] Firebase Auth SDK not loaded.');
             return;
@@ -57,11 +71,25 @@
 
     function login(email, password) {
         init();
+        // Dev mode: always succeed
+        if (window.firebaseConfig && window.firebaseConfig.SKIP_AUTH) {
+            return Promise.resolve();
+        }
         return firebase.auth().signInWithEmailAndPassword(email, password);
     }
 
     function logout() {
         init();
+        // Dev mode: clear user and trigger handlers
+        if (window.firebaseConfig && window.firebaseConfig.SKIP_AUTH) {
+            currentUser = null;
+            var handlers = pendingHandlers.slice();
+            pendingHandlers = [];
+            handlers.forEach(function (fn) {
+                try { fn(null); } catch (error) { console.error('[auth] handler error:', error); }
+            });
+            return Promise.resolve();
+        }
         return firebase.auth().signOut();
     }
 
@@ -89,13 +117,27 @@
         return !!currentUser;
     }
 
-    // Map common Firebase auth errors to i18n dictionary keys (Phase D resolves
-    // these to translations; callers fall back to a plain English string today).
+    // Map Firebase auth errors to i18n dictionary keys. Covers the credentials
+    // failures (wrong email/password), network/timeout cases, AND the console
+    // configuration errors that otherwise surface as a baffling "Login failed":
+    // provider disabled, unauthorized domain, restricted/invalid API key, or a
+    // misconfigured authDomain. Anything unmapped still falls back to
+    // login.error.generic, and dashboard.js appends the raw error code so the
+    // cause is never hidden.
     function loginErrorKey(error) {
         if (!error) return 'login.error.generic';
         var code = error.code || '';
+
+        // The compat SDK surfaces the server message in the code itself, e.g.
+        // "auth/api-key-not-valid.-please-pass-a-valid-api-key.". Match by
+        // prefix so both spellings resolve to the same actionable message.
+        if (code.indexOf('auth/api-key-not-valid') === 0) {
+            return 'login.error.invalidApiKey';
+        }
+
         switch (code) {
             case 'auth/invalid-credential':
+            case 'auth/invalid-login-credentials': // newer SDK spelling
             case 'auth/user-not-found':
             case 'auth/wrong-password':
                 return 'login.error.invalid';
@@ -103,6 +145,17 @@
                 return 'login.error.network';
             case 'auth/too-many-requests':
                 return 'login.error.tooMany';
+            case 'auth/operation-not-allowed':
+                // Email/password sign-in is disabled in the Firebase project.
+                return 'login.error.operationNotAllowed';
+            case 'auth/unauthorized-domain':
+            case 'auth/app-not-authorized':
+                // The page's domain isn't in the project's authorized domains.
+                return 'login.error.unauthorizedDomain';
+            case 'auth/invalid-api-key':
+                return 'login.error.invalidApiKey';
+            case 'auth/configuration-not-found':
+                return 'login.error.configurationNotFound';
             default:
                 return 'login.error.generic';
         }
