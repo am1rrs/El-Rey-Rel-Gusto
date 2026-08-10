@@ -5,14 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Menu complet El Rey del Gusto - Menu du restaurant El Rey del Gusto à Relizane, Algérie avec photos, prix et options de commande. Livraison et emporter disponibles.">
     <title>El Rey del Gusto - Menu Complet</title>
+    <script>if(localStorage.getItem('siteTheme')==='dark'||(!localStorage.getItem('siteTheme')&&matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}</script>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/categories.css">
     <link rel="stylesheet" href="css/cart.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:wght@400;600;700&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Dark Mode Toggle -->
+    <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+
     <!-- Language Selector -->
     <div class="language-selector">
         <button class="lang-btn active" data-lang="fr">Français</button>
@@ -90,5 +95,6 @@
     <script src="js/menu-renderer.js"></script>
     <script src="js/categories.js"></script>
     <script src="js/script.js"></script>
+    <script src="js/theme.js"></script>
 </body>
 </html>
