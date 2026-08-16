@@ -120,15 +120,27 @@ class CategoryManager {
         this.filterMenuByCategory(this.currentCategory);
     }
 
+    // The menu in effect on this page (DB/local copy via the menu service, else
+    // the static const). Returns an object; never throws.
+    getMenu() {
+        if (window.menuService && typeof window.menuService.getActiveMenu === 'function') {
+            const active = window.menuService.getActiveMenu();
+            if (active) return active;
+        }
+        return (typeof menuData !== 'undefined') ? menuData : {};
+    }
+
     isValidCategory(category) {
-        return category === 'all' || menuData.hasOwnProperty(category);
+        return category === 'all' || this.getMenu().hasOwnProperty(category);
     }
 
     getCategoryCount(categoryKey) {
+        const menu = this.getMenu();
         if (categoryKey === 'all') {
-            return Object.values(menuData).reduce((total, cat) => total + cat.items.length, 0);
+            return Object.values(menu).reduce((total, cat) => total + (cat.items ? cat.items.length : 0), 0);
         }
-        return menuData[categoryKey] ? menuData[categoryKey].items.length : 0;
+        const cat = menu[categoryKey];
+        return cat && cat.items ? cat.items.length : 0;
     }
 
     renderCategoryNav() {
@@ -136,7 +148,8 @@ class CategoryManager {
         if (!container) return;
 
         const currentLang = document.documentElement.getAttribute('lang') || 'fr';
-        const categories = ['all', ...Object.keys(menuData)];
+        const menu = this.getMenu();
+        const categories = ['all', ...Object.keys(menu)];
 
         container.innerHTML = '';
 
@@ -150,10 +163,13 @@ class CategoryManager {
             }
 
             // Get category icon
-            const icon = categoryKey === 'all' ? '📋' : menuData[categoryKey]?.icon || '🍽️';
+            const icon = categoryKey === 'all' ? '📋' : (menu[categoryKey]?.icon || '🍽️');
 
-            // Get category name
-            const categoryName = this.categoryTranslations[currentLang][categoryKey] || categoryKey;
+            // Get category name: prefer the category's own trilingual title
+            // (admin-managed categories), fall back to the hardcoded map.
+            const categoryName = categoryKey === 'all'
+                ? (this.categoryTranslations[currentLang].all || 'All')
+                : this.categoryTitle(menu[categoryKey], currentLang, categoryKey);
 
             // Get item count
             const count = this.getCategoryCount(categoryKey);
@@ -166,6 +182,19 @@ class CategoryManager {
 
             container.appendChild(button);
         });
+    }
+
+    // Resolve a category display name from its trilingual title when present,
+    // otherwise from the legacy hardcoded translation map.
+    categoryTitle(cat, lang, fallback) {
+        if (cat && cat.title) {
+            const t = cat.title[lang] || cat.title.fr || cat.title.en || cat.title.ar;
+            if (t) return t;
+        }
+        if (this.categoryTranslations[lang] && this.categoryTranslations[lang][fallback]) {
+            return this.categoryTranslations[lang][fallback];
+        }
+        return fallback;
     }
 
     attachEventListeners() {
@@ -245,6 +274,13 @@ class CategoryManager {
 let categoryManager;
 document.addEventListener('DOMContentLoaded', () => {
     categoryManager = new CategoryManager();
+});
+
+// Re-render the category nav when the menu service loads a DB/local copy.
+document.addEventListener('menu:loaded', () => {
+    if (categoryManager) {
+        categoryManager.renderCategoryNav();
+    }
 });
 
 // Export for use in other scripts

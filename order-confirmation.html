@@ -46,7 +46,7 @@
             </div>
 
             <div class="confirmation-actions">
-                <a href="index.html" class="action-btn primary">Retour au menu</a>
+                <a href="menu.html" class="action-btn primary">Retour au menu</a>
                 <button onclick="window.print()" class="action-btn secondary">Imprimer</button>
             </div>
         </div>
@@ -58,49 +58,80 @@
             const orderId = urlParams.get('orderId');
 
             if (!orderId) {
-                window.location.href = 'index.html';
+                const container = document.querySelector('.confirmation-container');
+                if (container) {
+                    container.innerHTML = '<div class="success-icon">⚠️</div>' +
+                        '<h1 class="confirmation-title">Commande introuvable</h1>' +
+                        '<p class="confirmation-subtitle">Aucun numéro de commande fourni.</p>' +
+                        '<div class="confirmation-actions"><a href="menu.html" class="action-btn primary">Retour au menu</a></div>';
+                }
+                setTimeout(() => { window.location.href = 'menu.html'; }, 3000);
                 return;
             }
 
-            // Load order from localStorage
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            const order = orders.find(o => o.orderId === orderId);
+            // Show loading state
+            const container = document.querySelector('.confirmation-container');
+            const loadingEl = document.createElement('div');
+            loadingEl.id = 'order-loading';
+            loadingEl.innerHTML = '<div class="loading-spinner"></div><p>جاري تحميل الطلب...</p>';
+            loadingEl.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--card-bg);border-radius:16px;z-index:10;';
+            container.style.position = 'relative';
+            container.appendChild(loadingEl);
 
-            if (!order) {
-                window.location.href = 'index.html';
-                return;
+            // Fetch order from Firestore
+            async function loadOrder() {
+                try {
+                    const service = window.getOrderService ? window.getOrderService() : null;
+                    if (!service || typeof service.getOrder !== 'function') {
+                        throw new Error('Order service unavailable');
+                    }
+
+                    const order = await service.getOrder(orderId);
+
+                    if (!order) {
+                        throw new Error('Order not found');
+                    }
+
+                    // Remove loading
+                    loadingEl.remove();
+
+                    // Display order details
+                    document.getElementById('order-id').textContent = order.orderId;
+                    document.getElementById('order-date').textContent = new Date(order.timestamp).toLocaleString('fr-DZ');
+
+                    const typeLabels = {
+                        'dine-in': 'Sur place',
+                        'delivery': 'Livraison',
+                        'takeaway': 'À emporter'
+                    };
+                    document.getElementById('order-type').textContent = typeLabels[order.orderType] || order.orderType;
+                    document.getElementById('order-total').textContent = order.total + ' DA';
+
+                    // Customize message based on order type
+                    let message = '';
+                    if (order.orderType === 'dine-in') {
+                        message = `Votre commande à la table ${order.tableNumber} sera préparée dans quelques instants.`;
+                    } else if (order.orderType === 'delivery') {
+                        message = 'Votre commande sera livrée à l\'adresse indiquée dans environ 45 minutes.';
+                    } else {
+                        const pickupTimes = {
+                            'now': 'environ 30 minutes',
+                            '30': '30 minutes',
+                            '60': '1 heure',
+                            '90': '1h30',
+                            '120': '2 heures'
+                        };
+                        const time = pickupTimes[order.pickupTime] || '30 minutes';
+                        message = `Votre commande sera prête pour le retrait dans ${time}.`;
+                    }
+                    document.getElementById('confirmation-text').textContent = message;
+                } catch (error) {
+                    console.error('Failed to load order:', error);
+                    loadingEl.innerHTML = '<p style="color:var(--error-color);">تعذر تحميل الطلب. <a href="menu.html">العودة للقائمة</a></p>';
+                }
             }
 
-            // Display order details
-            document.getElementById('order-id').textContent = order.orderId;
-            document.getElementById('order-date').textContent = new Date(order.timestamp).toLocaleString('fr-DZ');
-
-            const typeLabels = {
-                'dine-in': 'Sur place',
-                'delivery': 'Livraison',
-                'takeaway': 'À emporter'
-            };
-            document.getElementById('order-type').textContent = typeLabels[order.orderType] || order.orderType;
-            document.getElementById('order-total').textContent = order.total + ' DA';
-
-            // Customize message based on order type
-            let message = '';
-            if (order.orderType === 'dine-in') {
-                message = `Votre commande à la table ${order.tableNumber} sera préparée dans quelques instants.`;
-            } else if (order.orderType === 'delivery') {
-                message = 'Votre commande sera livrée à l\'adresse indiquée dans environ 45 minutes.';
-            } else {
-                const pickupTimes = {
-                    'now': 'environ 30 minutes',
-                    '30': '30 minutes',
-                    '60': '1 heure',
-                    '90': '1h30',
-                    '120': '2 heures'
-                };
-                const time = pickupTimes[order.pickupTime] || '30 minutes';
-                message = `Votre commande sera prête pour le retrait dans ${time}.`;
-            }
-            document.getElementById('confirmation-text').textContent = message;
+            loadOrder();
         });
     </script>
 
@@ -207,7 +238,7 @@
         }
 
         .action-btn.primary:hover {
-            background: #B87333;
+            background: #8D5524;
             transform: translateY(-2px);
         }
 

@@ -27,17 +27,17 @@
         <div class="checkout-section" id="order-type-section">
             <h2 class="section-title">Type de commande</h2>
             <div class="order-type-buttons" id="order-type-buttons">
-                <button class="order-type-btn" data-type="dine-in" onclick="selectOrderType('dine-in')">
+                <button class="order-type-btn" data-type="dine-in" aria-pressed="false" onclick="selectOrderType('dine-in')">
                     <span class="type-icon">🪑</span>
                     <span class="type-name">Sur place</span>
                     <span class="type-desc">Commander à table</span>
                 </button>
-                <button class="order-type-btn" data-type="delivery" onclick="selectOrderType('delivery')">
+                <button class="order-type-btn" data-type="delivery" aria-pressed="false" onclick="selectOrderType('delivery')">
                     <span class="type-icon">🚗</span>
                     <span class="type-name">Livraison</span>
                     <span class="type-desc">Livraison à domicile</span>
                 </button>
-                <button class="order-type-btn" data-type="takeaway" onclick="selectOrderType('takeaway')">
+                <button class="order-type-btn" data-type="takeaway" aria-pressed="false" onclick="selectOrderType('takeaway')">
                     <span class="type-icon">🥡</span>
                     <span class="type-name">À emporter</span>
                     <span class="type-desc">Retrait au restaurant</span>
@@ -116,6 +116,7 @@
 
     <!-- Scripts -->
     <script src="js/menu-data.js"></script>
+    <script src="js/utils.js"></script>
     <script src="js/cart.js"></script>
     <!-- Firebase SDK (compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>

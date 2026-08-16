@@ -1,13 +1,58 @@
 // Shopping Cart Management System
 // Handles cart operations: add, remove, update, clear
+// Persists cart to Firestore (carts/{sessionId}) for cross-device sync and durability.
+
+// Escape HTML to prevent XSS. Delegates to the shared utils module when available
+// (single source of truth), falling back to a local copy for legacy/standalone use.
+function escapeHtml(str) {
+    if (typeof window !== 'undefined' && window.utils && typeof window.utils.escapeHtml === 'function') {
+        return window.utils.escapeHtml(str);
+    }
+    return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 
 class ShoppingCart {
     constructor() {
         this.items = [];
         this.orderType = null; // 'delivery' | 'takeaway' | 'dine-in'
         this.tableNumber = null;
-        this.loadFromStorage();
+        this.sessionId = this.getOrCreateSessionId();
+        this.db = null;
+        this.useFirebase = false;
+        this.initFirebase();
         this.init();
+    }
+
+    // Initialize Firebase connection
+    async initFirebase() {
+        if (typeof window.initFirebase === 'function') {
+            this.useFirebase = window.initFirebase();
+            if (this.useFirebase) {
+                this.db = window.getFirestore();
+            }
+        }
+        if (!this.useFirebase) {
+            console.log('[cart] No Firestore — falling back to localStorage');
+        }
+        // Load cart after Firebase init (or immediately if no Firebase)
+        await this.loadFromStorage();
+        // Signal that cart is ready (Firebase loaded or fallback complete)
+        if (cartReadyResolve) cartReadyResolve(this);
+    }
+
+    // Get or create a unique session ID for this browser
+    getOrCreateSessionId() {
+        let sessionId = localStorage.getItem('cartSessionId');
+        if (!sessionId) {
+            sessionId = 'cart_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('cartSessionId', sessionId);
+        }
+        return sessionId;
     }
 
     init() {
@@ -22,6 +67,12 @@ class ShoppingCart {
         }
 
         this.updateCartIcon();
+
+        // Attach click handler to cart icon (now a button)
+        const cartIcon = document.getElementById('cart-icon');
+        if (cartIcon) {
+            cartIcon.addEventListener('click', () => this.openCart());
+        }
     }
 
     // Add item to cart
@@ -89,18 +140,49 @@ class ShoppingCart {
         return this.items.reduce((count, item) => count + item.quantity, 0);
     }
 
-    // Save to localStorage
-    saveToStorage() {
+    // Save to Firestore (or localStorage fallback)
+    async saveToStorage() {
         const cartData = {
             items: this.items,
             orderType: this.orderType,
-            tableNumber: this.tableNumber
+            tableNumber: this.tableNumber,
+            updatedAt: Date.now()
         };
+
+        if (this.useFirebase && this.db) {
+            try {
+                await this.db.collection('carts').doc(this.sessionId).set(cartData);
+                console.log('[cart] Saved to Firestore');
+                return;
+            } catch (error) {
+                console.warn('[cart] Firestore save failed, falling back to localStorage:', error);
+            }
+        }
+
+        // Fallback to localStorage
         localStorage.setItem('cart', JSON.stringify(cartData));
     }
 
-    // Load from localStorage
-    loadFromStorage() {
+    // Load from Firestore (or localStorage fallback)
+    async loadFromStorage() {
+        if (this.useFirebase && this.db) {
+            try {
+                const doc = await this.db.collection('carts').doc(this.sessionId).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    this.items = data.items || [];
+                    this.orderType = data.orderType || null;
+                    this.tableNumber = data.tableNumber || null;
+                    console.log('[cart] Loaded from Firestore');
+                    this.updateCartIcon();
+                    return;
+                }
+            } catch (error) {
+                console.warn('[cart] Firestore load failed, falling back to localStorage:', error);
+            }
+        }
+
+        // Fallback to localStorage
         const saved = localStorage.getItem('cart');
         if (saved) {
             try {
@@ -108,6 +190,8 @@ class ShoppingCart {
                 this.items = data.items || [];
                 this.orderType = data.orderType || null;
                 this.tableNumber = data.tableNumber || null;
+                console.log('[cart] Loaded from localStorage');
+                this.updateCartIcon();
             } catch (e) {
                 console.error('Failed to load cart:', e);
             }
@@ -123,6 +207,7 @@ class ShoppingCart {
             const count = this.getItemCount();
             badge.textContent = count;
             badge.style.display = count > 0 ? 'flex' : 'none';
+            icon.setAttribute('aria-label', `Panier - ${count} article${count > 1 ? 's' : ''}`);
         }
     }
 
@@ -147,10 +232,17 @@ class ShoppingCart {
     showTableBanner() {
         const banner = document.createElement('div');
         banner.className = 'table-banner';
-        banner.innerHTML = `
-            <span class="table-icon">🪑</span>
-            <span class="table-text">Table ${this.tableNumber}</span>
-        `;
+
+        const icon = document.createElement('span');
+        icon.className = 'table-icon';
+        icon.textContent = '🪑';
+
+        const text = document.createElement('span');
+        text.className = 'table-text';
+        text.textContent = 'Table ' + escapeHtml(String(this.tableNumber));
+
+        banner.appendChild(icon);
+        banner.appendChild(text);
 
         const header = document.querySelector('.header');
         if (header) {
@@ -187,22 +279,30 @@ class ShoppingCart {
             const itemElement = document.createElement('div');
             itemElement.className = 'cart-item';
 
-            const sizeInfo = item.size ? `<span class="item-size">(${item.size})</span>` : '';
-            const notesInfo = item.notes ? `<p class="item-notes">Note: ${item.notes}</p>` : '';
+            const safeName = escapeHtml(item.name);
+            const safeSize = escapeHtml(item.size || '');
+            const safeNotes = escapeHtml(item.notes || '');
+            const safePrice = escapeHtml(String(item.price));
+            const safeQuantity = escapeHtml(String(item.quantity));
+            const safeTotal = escapeHtml(String(item.price * item.quantity));
+            const safeId = escapeHtml(item.id);
+
+            const sizeInfo = safeSize ? `<span class="item-size">(${safeSize})</span>` : '';
+            const notesInfo = safeNotes ? `<p class="item-notes">Note: ${safeNotes}</p>` : '';
 
             itemElement.innerHTML = `
                 <div class="cart-item-info">
-                    <h4 class="cart-item-name">${item.name} ${sizeInfo}</h4>
+                    <h4 class="cart-item-name">${safeName} ${sizeInfo}</h4>
                     ${notesInfo}
-                    <p class="cart-item-price">${item.price} DA</p>
+                    <p class="cart-item-price">${safePrice} DA</p>
                 </div>
                 <div class="cart-item-controls">
-                    <button class="qty-btn minus" data-id="${item.id}" data-size="${item.size || ''}">-</button>
-                    <span class="cart-item-quantity">${item.quantity}</span>
-                    <button class="qty-btn plus" data-id="${item.id}" data-size="${item.size || ''}">+</button>
-                    <button class="remove-btn" data-id="${item.id}" data-size="${item.size || ''}">🗑️</button>
+                    <button class="qty-btn minus" data-id="${safeId}" data-size="${safeSize}">-</button>
+                    <span class="cart-item-quantity">${safeQuantity}</span>
+                    <button class="qty-btn plus" data-id="${safeId}" data-size="${safeSize}">+</button>
+                    <button class="remove-btn" data-id="${safeId}" data-size="${safeSize}">🗑️</button>
                 </div>
-                <div class="cart-item-total">${item.price * item.quantity} DA</div>
+                <div class="cart-item-total">${safeTotal} DA</div>
             `;
 
             container.appendChild(itemElement);
@@ -211,8 +311,8 @@ class ShoppingCart {
         // Update summary
         this.updateCartSummary();
 
-        // Attach event listeners
-        this.attachCartEventListeners();
+        // Event delegation is attached once on the static container
+        // (see bindCartDelegation), so we never re-bind per render.
     }
 
     // Update cart summary
@@ -224,45 +324,57 @@ class ShoppingCart {
         if (totalEl) totalEl.textContent = this.getTotal() + ' DA';
     }
 
-    // Attach event listeners for cart page
-    attachCartEventListeners() {
-        // Quantity buttons
-        document.querySelectorAll('.qty-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const id = e.target.dataset.id;
-                const size = e.target.dataset.size || null;
-                const item = this.items.find(i => i.id === id && i.size === size);
+    // Attach a single delegated listener on the static #cart-items container.
+    // Called once (from the cart page initializer) so re-rendering the cart
+    // never stacks duplicate listeners on the rebuilt buttons.
+    bindCartDelegation() {
+        const container = document.getElementById('cart-items');
+        if (!container || container.__cartDelegated) return;
+        container.__cartDelegated = true;
 
-                if (item) {
-                    if (e.target.classList.contains('plus')) {
-                        this.updateQuantity(id, size, item.quantity + 1);
-                    } else if (e.target.classList.contains('minus')) {
-                        this.updateQuantity(id, size, item.quantity - 1);
-                    }
-                }
-            });
-        });
+        container.addEventListener('click', (e) => {
+            const btn = e.target.closest('.qty-btn, .remove-btn');
+            if (!btn || !container.contains(btn)) return;
 
-        // Remove buttons
-        document.querySelectorAll('.remove-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const id = e.target.dataset.id;
-                const size = e.target.dataset.size || null;
+            const id = btn.dataset.id;
+            const size = btn.dataset.size || null;
+
+            if (btn.classList.contains('remove-btn')) {
                 this.removeItem(id, size);
-            });
+                return;
+            }
+
+            const item = this.items.find(i => i.id === id && i.size === size);
+            if (!item) return;
+
+            if (btn.classList.contains('plus')) {
+                this.updateQuantity(id, size, item.quantity + 1);
+            } else if (btn.classList.contains('minus')) {
+                this.updateQuantity(id, size, item.quantity - 1);
+            }
         });
     }
 }
 
 // Initialize cart
 let cart;
+let cartReadyResolve = null;
+let cartReadyReject = null;
+
+// Promise that resolves when cart is fully initialized (Firebase loaded or fallback complete)
+window.cartReady = new Promise((resolve, reject) => {
+    cartReadyResolve = resolve;
+    cartReadyReject = reject;
+});
+
 window.getCart = function() { return cart; };
 window.setCart = function(instance) { cart = instance; };
 document.addEventListener('DOMContentLoaded', () => {
     cart = new ShoppingCart();
 
-    // If on cart page, render cart
+    // If on cart page, render cart and bind delegated listeners once.
     if (document.getElementById('cart-items')) {
+        cart.bindCartDelegation();
         cart.renderCart();
     }
 });

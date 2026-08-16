@@ -8,7 +8,7 @@
 
     /* Brand accent — copper (restaurant identity) */
     --price-copper: #CD7F32;
-    --price-copper-hover: #B87333;
+    --price-copper-hover: #8D5524;
 
     /* Theme neutrals (light) */
     --bg-cream: #f9fafb;          /* page background + secondary surfaces */
@@ -18,6 +18,27 @@
     --decorative-gray: #e4e6e8;   /* borders */
     --circle-bg: #000000;
     --shadow: rgba(0, 0, 0, 0.08);
+
+    /* Menu redesign tokens (used by css/menu.css on menu.html only) */
+    --surface-2: #f1f2f4;          /* secondary surface: chips, bands, placeholder bases */
+    --surface-3: #e9eaed;          /* hover surface */
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 20px;
+    --radius-pill: 999px;
+    --shadow-sm: 0 1px 2px var(--shadow);
+    --shadow-md: 0 8px 24px -12px var(--shadow);
+    --shadow-lg: 0 24px 60px -20px var(--shadow);
+    --ring: rgba(205, 127, 50, 0.35);          /* focus ring */
+    --success: #1f9d61;                          /* "available / save" style accents */
+    --overlay: rgba(14, 10, 7, 0.55);           /* image scrim */
+
+    /* Warm dark hero band (same in light & dark — brand statement) */
+    --hero-bg: #1b130c;
+    --hero-bg-2: #2c1f13;
+    --hero-text: #f7f1e8;
+    --hero-muted: rgba(247, 241, 232, 0.7);
+    --hero-accent: #e0a458;
 }
 
 /* Dark mode */
@@ -33,6 +54,14 @@
     --decorative-gray: #383c43;
     --circle-bg: #ffffff;
     --shadow: rgba(0, 0, 0, 0.45);
+
+    /* Menu redesign tokens (dark overrides) */
+    --surface-2: #2e3138;
+    --surface-3: #3a3e46;
+    --ring: rgba(217, 142, 74, 0.45);
+    --overlay: rgba(0, 0, 0, 0.62);
+    --hero-bg: #0f0c09;
+    --hero-bg-2: #1d1610;
 }
 
 /* ==================== Reset & Base ==================== */
@@ -58,8 +87,8 @@ body[dir="rtl"] {
 /* ==================== Language Selector ==================== */
 .language-selector {
     position: fixed;
-    top: 20px;
-    right: 20px;
+    top: calc(20px + env(safe-area-inset-top, 0px));
+    right: calc(20px + env(safe-area-inset-right, 0px));
     display: flex;
     gap: 10px;
     z-index: 1000;
@@ -67,6 +96,7 @@ body[dir="rtl"] {
     padding: 8px;
     border-radius: 50px;
     box-shadow: 0 4px 12px var(--shadow);
+    /* Mobile: move below header to avoid overlap */
 }
 
 .lang-btn {
@@ -93,8 +123,8 @@ body[dir="rtl"] {
 /* ==================== Dark Mode Toggle (fixed, opposite corner from language selector) ==================== */
 .theme-toggle {
     position: fixed;
-    top: 20px;
-    inset-inline-start: 20px;
+    top: calc(20px + env(safe-area-inset-top, 0px));
+    inset-inline-start: calc(20px + env(safe-area-inset-left, 0px));
     z-index: 1000;
     width: 44px;
     height: 44px;
@@ -120,7 +150,7 @@ body[dir="rtl"] {
 /* ==================== Header ==================== */
 .header {
     text-align: center;
-    padding: 80px 20px 40px;
+    padding: calc(80px + env(safe-area-inset-top, 0px)) 20px 40px;
     position: relative;
 }
 
@@ -399,7 +429,7 @@ body[dir="rtl"] {
 }
 
 .print-btn:hover {
-    background: #B87333;
+    background: #8D5524;
     transform: translateY(-3px);
     box-shadow: 0 6px 16px rgba(205, 127, 50, 0.4);
 }
@@ -407,7 +437,7 @@ body[dir="rtl"] {
 /* ==================== Footer ==================== */
 .footer {
     text-align: center;
-    padding: 30px 20px;
+    padding: 30px calc(20px + env(safe-area-inset-right, 0px)) calc(30px + env(safe-area-inset-bottom, 0px));
     background: var(--text-dark-gray);
     color: white;
     margin-top: 80px;
@@ -451,7 +481,7 @@ body[dir="rtl"] {
 .hero-section {
     text-align: center;
     padding: 60px 20px;
-    background: linear-gradient(135deg, var(--price-copper), #B87333);
+    background: linear-gradient(135deg, var(--price-copper), #8D5524);
     color: white;
     margin: 40px 0;
     border-radius: 20px;
@@ -609,7 +639,7 @@ body[dir="rtl"] {
 }
 
 .cta-button-primary:hover {
-    background: #B87333;
+    background: #8D5524;
     transform: translateY(-3px);
     box-shadow: 0 6px 24px rgba(205, 127, 50, 0.6);
 }
@@ -653,6 +683,24 @@ body[dir="rtl"] {
 }
 
 /* ==================== Responsive Design ==================== */
+/* Tablet breakpoint (481–1024px): keep floating controls from overlapping
+   the header title; nudge them clear and tighten the grid. */
+@media (max-width: 1024px) {
+    .language-selector {
+        top: calc(10px + env(safe-area-inset-top, 0px));
+        right: calc(10px + env(safe-area-inset-right, 0px));
+        padding: 6px;
+    }
+    .lang-btn {
+        padding: 6px 14px;
+        font-size: 13px;
+    }
+    .menu-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 20px;
+    }
+}
+
 @media (max-width: 768px) {
     .hero-content h2 {
         font-size: 1.8rem;

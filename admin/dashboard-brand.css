@@ -1,0 +1,438 @@
+/* =====================================================================
+   dashboard-brand.css — warm copper / cream brand overlay for the admin.
+   Loaded AFTER dashboard.css on admin/index.html only, so it layers on
+   top of the shared admin theme without touching dashboard.css itself.
+
+   Matches the "El Rey del Gusto" menu identity: copper #CD7F32,
+   gold #D9A05B, cream surfaces, dark-warm sidebar in BOTH modes.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   Body — warm cream base with soft copper radial washes
+   --------------------------------------------------------------------- */
+body {
+    background-color: var(--bg-cream);
+    background-image:
+        radial-gradient(1100px 480px at 85% -10%, rgba(205, 127, 50, 0.14), transparent 60%),
+        radial-gradient(900px 460px at -10% 110%, rgba(217, 160, 91, 0.12), transparent 55%);
+    background-attachment: fixed;
+}
+
+/* ---------------------------------------------------------------------
+   Login screen — dark copper gradient + glowing blobs (menu-hero echo)
+   --------------------------------------------------------------------- */
+.login-screen {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(160deg, #1c140b, #2b1f12 45%, #3a2a18);
+}
+
+.login-screen::before,
+.login-screen::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.login-screen::before {
+    width: 380px;
+    height: 380px;
+    background: rgba(205, 127, 50, 0.35);
+    top: -120px;
+    inset-inline-end: -100px;
+}
+
+.login-screen::after {
+    width: 320px;
+    height: 320px;
+    background: rgba(232, 179, 107, 0.25);
+    bottom: -100px;
+    inset-inline-start: -80px;
+}
+
+.login-container {
+    position: relative;
+    z-index: 1;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.dark .login-container {
+    background: rgba(32, 28, 22, 0.94);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.login-title {
+    color: var(--text-primary);
+}
+
+.login-btn {
+    background: linear-gradient(135deg, #e8b36b, #b87333);
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(205, 127, 50, 0.35);
+}
+
+.login-btn:hover {
+    background: linear-gradient(135deg, #f0c382, #cd7f32);
+}
+
+/* ---------------------------------------------------------------------
+   Sidebar — dark warm wood/copper in both light and dark modes
+   --------------------------------------------------------------------- */
+.sidebar {
+    background: linear-gradient(180deg, #241a10, #332510 55%, #3a2a18);
+    border-inline-end: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.sidebar-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.sidebar-logo {
+    background: linear-gradient(135deg, #e8b36b, #b87333);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-brand-name {
+    color: #f5ead6;
+}
+
+.sidebar-brand-badge {
+    background: rgba(232, 179, 107, 0.15);
+    color: #e8b36b;
+}
+
+.sidebar-section-label {
+    color: rgba(245, 234, 214, 0.45);
+}
+
+.nav-item {
+    color: rgba(245, 234, 214, 0.72);
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #f5ead6;
+}
+
+.nav-item.active {
+    background: linear-gradient(90deg, rgba(205, 127, 50, 0.35), rgba(205, 127, 50, 0.12));
+    color: #f0c382;
+}
+
+.sidebar-toggle {
+    color: rgba(245, 234, 214, 0.7);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.sidebar-toggle:hover {
+    color: #f0c382;
+    border-color: #f0c382;
+}
+
+/* ---------------------------------------------------------------------
+   Header — frosted glass + copper brand bar on the title
+   --------------------------------------------------------------------- */
+.dashboard-header {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(205, 127, 50, 0.15);
+}
+
+.dark .dashboard-header {
+    background: rgba(25, 25, 25, 0.82);
+}
+
+.dashboard-title {
+    position: relative;
+    padding-inline-start: 16px;
+}
+
+.dashboard-title::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 6px;
+    bottom: 6px;
+    width: 4px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #e8b36b, #b87333);
+}
+
+/* ---------------------------------------------------------------------
+   Stat cards — soft warm cards, copper gradient icon chips
+   --------------------------------------------------------------------- */
+.stat-card {
+    border-radius: 18px;
+    border-color: rgba(205, 127, 50, 0.12);
+    box-shadow: 0 2px 18px rgba(120, 90, 50, 0.08);
+}
+
+.stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #e8b36b, #b87333);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 16px rgba(205, 127, 50, 0.35);
+    flex-shrink: 0;
+}
+
+.stat-value {
+    font-family: var(--font-display);
+}
+
+/* ---------------------------------------------------------------------
+   Panels — roomier radius, warm shadow, copper accent bar on titles
+   --------------------------------------------------------------------- */
+.panel {
+    border-radius: 18px;
+    border-color: rgba(205, 127, 50, 0.12);
+    box-shadow: 0 2px 18px rgba(120, 90, 50, 0.08);
+}
+
+.panel-title {
+    position: relative;
+    padding-inline-start: 14px;
+}
+
+.panel-title::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 4px;
+    bottom: 4px;
+    width: 4px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #e8b36b, #b87333);
+}
+
+/* ---------------------------------------------------------------------
+   Orders table — warm thead, subtle copper stripes
+   --------------------------------------------------------------------- */
+.orders-table {
+    border-radius: 18px;
+    box-shadow: 0 2px 18px rgba(120, 90, 50, 0.08);
+}
+
+.orders-table thead th {
+    background: linear-gradient(180deg, #f6ede1, #f3e6d4);
+    color: #8a5f33;
+}
+
+.dark .orders-table thead th {
+    background: linear-gradient(180deg, rgba(205, 127, 50, 0.18), rgba(205, 127, 50, 0.08));
+    color: #e8b36b;
+}
+
+.orders-table tbody tr:nth-child(even) {
+    background: rgba(205, 127, 50, 0.05);
+}
+
+.dark .orders-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* ---------------------------------------------------------------------
+   Controls — friendlier radii
+   --------------------------------------------------------------------- */
+.filter-group select,
+.filter-group input,
+.pagination-size select {
+    border-radius: 12px;
+}
+
+.btn-tool,
+.refresh-btn,
+.logout-btn,
+.icon-btn,
+.pagination-nav button {
+    border-radius: 12px;
+}
+
+/* ---------------------------------------------------------------------
+   Analytics — 7-day revenue bars + top selling items (pure CSS)
+   --------------------------------------------------------------------- */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 20px;
+    padding-inline: 30px;
+    padding-bottom: 30px;
+}
+
+.revenue-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    height: 210px;
+    padding-top: 8px;
+}
+
+.revenue-bar-col {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.revenue-bar-track {
+    flex: 1;
+    width: 100%;
+    min-height: 24px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background: rgba(205, 127, 50, 0.06);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.revenue-bar {
+    width: 70%;
+    max-width: 46px;
+    min-height: 4px;
+    border-radius: 8px 8px 4px 4px;
+    background: linear-gradient(180deg, #e8b36b, #b87333 70%, #a05e24);
+    transition: height 0.35s ease;
+}
+
+.revenue-bar.today {
+    background: linear-gradient(180deg, #f0c382, #cd7f32 70%, #b06a26);
+    box-shadow: 0 0 0 3px rgba(205, 127, 50, 0.15);
+}
+
+.revenue-bar-value {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--accent);
+    white-space: nowrap;
+}
+
+.revenue-bar-label {
+    font-size: 0.68rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.analytics-empty {
+    text-align: center;
+    padding: 30px 10px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.top-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.top-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.top-item-rank {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e8b36b, #b87333);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(205, 127, 50, 0.3);
+}
+
+.top-item-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.top-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.top-item-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.top-item-qty {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+.top-item-bar {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    overflow: hidden;
+}
+
+.top-item-bar-fill {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #e8b36b, #b87333);
+}
+
+/* ---------------------------------------------------------------------
+   Modal
+   --------------------------------------------------------------------- */
+.modal-content {
+    border-radius: 22px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* ---------------------------------------------------------------------
+   Responsive — analytics stacks on narrow screens
+   --------------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .analytics-grid {
+        grid-template-columns: 1fr;
+        padding-inline: 15px;
+    }
+
+    .revenue-chart {
+        height: 180px;
+    }
+}

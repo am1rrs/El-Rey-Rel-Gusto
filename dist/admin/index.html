@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - El Rey del Gusto</title>
+    <script>if(localStorage.getItem('adminTheme')==='dark'||(!localStorage.getItem('adminTheme')&&matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:wght@400;600;700&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" crossorigin href="/assets/index-qpGzl27D.css">
+  <link rel="stylesheet" crossorigin href="/assets/styles-COtixyyD.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-container">
+            <div class="lang-switcher login-switcher" role="group" aria-label="Language">
+                <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+                <button type="button" class="lang-btn" data-lang="fr" aria-pressed="true">FR</button>
+                <button type="button" class="lang-btn" data-lang="ar" aria-pressed="false">AR</button>
+            </div>
+            <h1 class="login-title">El Rey del Gusto</h1>
+            <h2 class="login-subtitle" data-i18n="login.subtitle">Admin Dashboard</h2>
+            <form id="login-form" novalidate>
+                <div class="form-group">
+                    <label for="email" data-i18n="login.email">Email</label>
+                    <input type="email" id="email" autocomplete="username" required placeholder="admin@elrey.com">
+                </div>
+                <div class="form-group">
+                    <label for="password" data-i18n="login.password">Password</label>
+                    <input type="password" id="password" autocomplete="current-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="login-btn" data-i18n="login.submit">Sign in</button>
+                <p id="login-hint" class="login-hint" hidden></p>
+                <p id="login-error" class="login-error" hidden></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="dashboard" style="display: none;">
+        <div class="app-shell" id="app-shell">
+            <!-- Collapsible Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-brand">
+                        <div class="sidebar-logo">🍽️</div>
+                        <div class="sidebar-brand-text">
+                            <div class="sidebar-brand-name">El Rey del Gusto</div>
+                            <span class="sidebar-brand-badge">Admin</span>
+                        </div>
+                    </div>
+                </div>
+
+                <nav class="sidebar-nav" aria-label="Main navigation">
+                    <div class="sidebar-section-label" data-i18n="sidebar.main">Menu</div>
+                    <button type="button" class="nav-item" data-view="overview" aria-current="page">
+                        <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        <span class="nav-label" data-i18n="nav.dashboard">Dashboard</span>
+                    </button>
+                    <button type="button" class="nav-item" data-view="orders">
+                        <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                        <span class="nav-label" data-i18n="nav.orders">Orders</span>
+                        <span class="nav-badge" id="sidebar-pending-badge" hidden>0</span>
+                    </button>
+                    <button type="button" class="nav-item" data-view="menu">
+                        <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+                        <span class="nav-label" data-i18n="nav.menu">Menu</span>
+                    </button>
+                    <button type="button" class="nav-item" data-view="qr">
+                        <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
+                        <span class="nav-label" data-i18n="nav.qr">QR Codes</span>
+                    </button>
+                    <a class="nav-item" href="../menu.html" target="_blank" rel="noopener">
+                        <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+                        <span class="nav-label" data-i18n="nav.viewSite">View site</span>
+                    </a>
+
+                    <div class="sidebar-section-label" data-i18n="sidebar.account">Account</div>
+                    <button type="button" class="nav-item" id="sidebar-logout">
+                        <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+                        <span class="nav-label" data-i18n="nav.logout">Sign out</span>
+                    </button>
+                </nav>
+
+                <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-expanded="true" aria-label="Toggle sidebar">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 17 5-5-5-5"/><path d="m13 17 5-5-5-5"/></svg>
+                    <span class="toggle-label" data-i18n="sidebar.toggle">Collapse sidebar</span>
+                </button>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Header -->
+                <header class="dashboard-header">
+                    <div class="header-left">
+                        <h1 class="dashboard-title" id="page-title">Dashboard</h1>
+                    </div>
+                    <div class="header-right">
+                        <div class="lang-switcher" role="group" aria-label="Language">
+                            <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+                            <button type="button" class="lang-btn" data-lang="fr" aria-pressed="true">FR</button>
+                            <button type="button" class="lang-btn" data-lang="ar" aria-pressed="false">AR</button>
+                        </div>
+                        <button type="button" class="icon-btn" id="dark-toggle" title="">
+                            <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                            <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                        </button>
+                        <button type="button" class="refresh-btn" id="refresh-orders-btn" data-i18n="refresh">Refresh</button>
+                        <button type="button" class="logout-btn" id="logout-btn" data-i18n="logout">Sign out</button>
+                    </div>
+                </header>
+
+                <!-- Overview View -->
+                <section class="view active" id="view-overview">
+                    <!-- Stats Cards -->
+                    <div class="stats-container">
+                        <div class="stat-card clickable" data-status="pending" role="button" tabindex="0">
+                            <div class="stat-icon">📋</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="stat-pending">0</div>
+                                <div class="stat-label" data-i18n="stats.pending">Pending</div>
+                            </div>
+                        </div>
+                        <div class="stat-card clickable" data-status="preparing" role="button" tabindex="0">
+                            <div class="stat-icon">👨‍🍳</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="stat-preparing">0</div>
+                                <div class="stat-label" data-i18n="stats.preparing">In preparation</div>
+                            </div>
+                        </div>
+                        <div class="stat-card clickable" data-status="ready" role="button" tabindex="0">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="stat-ready">0</div>
+                                <div class="stat-label" data-i18n="stats.ready">Ready</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">💰</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="stat-total">0 DA</div>
+                                <div class="stat-label" data-i18n="stats.total">Today's total</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Overview grid: recent activity + quick stats -->
+                    <div class="overview-grid">
+                        <div class="panel">
+                            <h2 class="panel-title" data-i18n="overview.activityTitle">Recent activity</h2>
+                            <div id="overview-activity"></div>
+                        </div>
+                        <div class="panel">
+                            <h2 class="panel-title" data-i18n="overview.quickStats">Quick stats</h2>
+                            <div id="overview-quick-stats"></div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics: revenue trend + top selling items -->
+                    <div class="analytics-grid">
+                        <div class="panel analytics-panel">
+                            <h2 class="panel-title" data-i18n="analytics.revenueTitle">Revenue — last 7 days</h2>
+                            <div id="analytics-revenue"></div>
+                        </div>
+                        <div class="panel analytics-panel">
+                            <h2 class="panel-title" data-i18n="analytics.topTitle">Top selling items</h2>
+                            <div id="analytics-top-items"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Orders View -->
+                <section class="view" id="view-orders">
+                    <!-- Filters -->
+                    <div class="filters-container">
+                        <div class="filter-group">
+                            <label data-i18n="filters.status">Status:</label>
+                            <div class="status-checkboxes" id="status-checkboxes">
+                                <label class="chk"><input type="checkbox" class="status-checkbox" value="pending"><span data-i18n="status.pending">Pending</span></label>
+                                <label class="chk"><input type="checkbox" class="status-checkbox" value="preparing"><span data-i18n="status.preparing">In preparation</span></label>
+                                <label class="chk"><input type="checkbox" class="status-checkbox" value="ready"><span data-i18n="status.ready">Ready</span></label>
+                                <label class="chk"><input type="checkbox" class="status-checkbox" value="delivered"><span data-i18n="status.delivered">Delivered</span></label>
+                                <label class="chk"><input type="checkbox" class="status-checkbox" value="cancelled"><span data-i18n="status.cancelled">Cancelled</span></label>
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label for="type-filter" data-i18n="filters.type">Type:</label>
+                            <select id="type-filter">
+                                <option value="all" data-i18n="filters.all">All</option>
+                                <option value="dine-in" data-i18n="type.dine-in">Dine-in</option>
+                                <option value="delivery" data-i18n="type.delivery">Delivery</option>
+                                <option value="takeaway" data-i18n="type.takeaway">Takeaway</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="date-filter" data-i18n="filters.dateRange">Date range:</label>
+                            <select id="date-filter">
+                                <option value="today" data-i18n="dateRange.today">Today</option>
+                                <option value="week" data-i18n="dateRange.week">This week</option>
+                                <option value="month" data-i18n="dateRange.month">This month</option>
+                                <option value="custom" data-i18n="dateRange.custom">Custom</option>
+                            </select>
+                            <div class="custom-date-range" id="custom-date-range" hidden>
+                                <input type="date" id="date-from" data-i18n-ph="filters.dateFrom">
+                                <input type="date" id="date-to" data-i18n-ph="filters.dateTo">
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label for="payment-status-filter" data-i18n="filters.paymentStatus">Payment status:</label>
+                            <select id="payment-status-filter">
+                                <option value="all" data-i18n="filters.all">All</option>
+                                <option value="pending" data-i18n="payment.pending">Pending</option>
+                                <option value="paid" data-i18n="payment.paid">Paid</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="payment-method-filter" data-i18n="filters.paymentMethod">Payment method:</label>
+                            <select id="payment-method-filter">
+                                <option value="all" data-i18n="filters.all">All</option>
+                                <option value="cash" data-i18n="payment.cash">Cash</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="search-filter" data-i18n="filters.search">Search:</label>
+                            <input type="text" id="search-filter" data-i18n-ph="filters.searchPlaceholder" placeholder="Order, phone, item, address...">
+                        </div>
+                        <div class="filter-group filter-actions">
+                            <button type="button" id="clear-filters-btn" class="btn-tool" hidden data-i18n="filters.clear">Clear filters</button>
+                        </div>
+                    </div>
+
+                    <!-- Firestore connection / error status -->
+                    <div id="data-status" class="data-status" style="display: none;"></div>
+
+                    <!-- Toolbar -->
+                    <div class="actions-toolbar">
+                        <button type="button" class="btn-tool" id="export-csv-btn" data-i18n="export.csv">Export CSV</button>
+                        <button type="button" class="btn-tool" id="print-btn" data-i18n="export.print">Print</button>
+                    </div>
+
+                    <!-- Orders Table -->
+                    <div class="orders-container">
+                        <h2 class="section-title" data-i18n="orders.title">Orders</h2>
+                        <span id="results-count" class="results-count"></span>
+                        <div class="table-wrapper">
+                            <table id="orders-table" class="orders-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" data-sort-key="orderId" data-i18n="table.orderId">Order ID</th>
+                                        <th scope="col" data-sort-key="timestamp" class="sort-desc" aria-sort="descending" data-i18n="table.date">Date / Time</th>
+                                        <th scope="col" data-sort-key="customer" data-i18n="table.customer">Customer</th>
+                                        <th scope="col" data-sort-key="items" data-i18n="table.items">Items</th>
+                                        <th scope="col" data-sort-key="type" data-i18n="table.type">Type</th>
+                                        <th scope="col" data-sort-key="total" data-i18n="table.total">Total</th>
+                                        <th scope="col" data-sort-key="status" data-i18n="table.status">Status</th>
+                                        <th scope="col" data-i18n="table.actions">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="orders-tbody"></tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="pagination">
+                            <div class="pagination-size">
+                                <label for="page-size" data-i18n="pagination.size">Per page</label>
+                                <select id="page-size">
+                                    <option value="10">10</option>
+                                    <option value="25" selected>25</option>
+                                    <option value="50">50</option>
+                                </select>
+                            </div>
+                            <div class="pagination-nav">
+                                <button type="button" id="prev-page" data-i18n="pagination.prev">Prev</button>
+                                <span id="page-info" class="page-info">Page 1 of 1</span>
+                                <button type="button" id="next-page" data-i18n="pagination.next">Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Menu Management View -->
+                <section class="view" id="view-menu">
+                    <div class="menu-admin-toolbar">
+                        <div class="menu-admin-actions">
+                            <button type="button" class="btn-tool btn-primary" id="menu-add-category-btn">
+                                <span class="menu-btn-plus">+</span>
+                                <span data-i18n="menu.addCategory">New category</span>
+                            </button>
+                            <button type="button" class="btn-tool" id="menu-reload-btn" data-i18n="menu.reload">Reload</button>
+                        </div>
+                        <span id="menu-source" class="menu-source"></span>
+                    </div>
+                    <div class="menu-admin-grid">
+                        <div class="panel menu-categories-panel">
+                            <h2 class="panel-title" data-i18n="menu.categoriesTitle">Categories</h2>
+                            <div id="menu-categories" class="menu-cat-list"></div>
+                        </div>
+                        <div class="panel menu-items-panel">
+                            <div class="menu-items-header">
+                                <h2 class="panel-title" id="menu-items-title">Items</h2>
+                                <button type="button" class="btn-tool" id="menu-add-item-btn" data-i18n="menu.addItem">+ New item</button>
+                            </div>
+                            <div id="menu-items" class="menu-item-list"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- QR Code Generator View -->
+                <section class="view" id="view-qr">
+                    <div class="qr-admin-grid">
+                        <div class="panel qr-settings-panel">
+                            <h2 class="panel-title" data-i18n="qr.settingsTitle">QR settings</h2>
+                            <div class="qr-form">
+                                <label class="qr-field" for="qr-url">
+                                    <span data-i18n="qr.urlLabel">Menu link</span>
+                                    <input type="url" id="qr-url" class="qr-input" inputmode="url" data-i18n-ph="qr.urlPlaceholder" placeholder="https://your-site.com/">
+                                </label>
+                                <label class="qr-field" for="qr-table">
+                                    <span data-i18n="qr.tableLabel">Table number (optional)</span>
+                                    <input type="number" id="qr-table" class="qr-input" min="1" max="999" step="1" inputmode="numeric">
+                                </label>
+                                <label class="qr-field" for="qr-size">
+                                    <span data-i18n="qr.sizeLabel">Size</span>
+                                    <select id="qr-size" class="qr-input">
+                                        <option value="200">200 px</option>
+                                        <option value="256" selected>256 px</option>
+                                        <option value="400">400 px</option>
+                                        <option value="600">600 px</option>
+                                    </select>
+                                </label>
+                                <div class="qr-colors">
+                                    <label class="qr-field qr-color-field" for="qr-fg">
+                                        <span data-i18n="qr.colorLabel">Code color</span>
+                                        <input type="color" id="qr-fg" value="#1a1917">
+                                    </label>
+                                    <label class="qr-field qr-color-field" for="qr-bg">
+                                        <span data-i18n="qr.bgLabel">Background</span>
+                                        <input type="color" id="qr-bg" value="#ffffff">
+                                    </label>
+                                </div>
+                            </div>
+                            <p class="qr-hint" data-i18n="qr.cardHint">Print this card and place it on the tables.</p>
+                        </div>
+
+                        <div class="panel qr-preview-panel">
+                            <h2 class="panel-title" data-i18n="qr.previewTitle">Code preview</h2>
+                            <div class="qr-preview-wrap">
+                                <canvas id="qr-code" class="qr-offscreen" aria-hidden="true"></canvas>
+                                <canvas id="qr-card" class="qr-card-canvas" role="img" aria-label="QR code"></canvas>
+                            </div>
+                            <p id="qr-status" class="qr-status" hidden></p>
+                            <p id="qr-error" class="qr-error" hidden data-i18n="qr.libError">The QR library failed to load. Check your connection and reload.</p>
+                            <div class="qr-actions">
+                                <button type="button" class="btn-tool btn-primary" id="qr-download-btn" data-i18n="qr.download">Download PNG</button>
+                                <button type="button" class="btn-tool" id="qr-print-btn" data-i18n="qr.print">Print</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="order-modal" class="modal" role="dialog" aria-modal="true" style="display: none;">
+        <div class="modal-content">
+            <button type="button" class="modal-close" data-action="close" data-i18n-title="modal.close" aria-label="Close">&times;</button>
+            <div id="order-details"></div>
+        </div>
+    </div>
+
+    <!-- Audio notification -->
+    <audio id="notification-sound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBDGH0fPTgjMGHm7A7+OZURE=" type="audio/wav">
+    </audio>
+
+    <!-- Firebase SDK (compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/order-service.js"></script>
+    <script src="../js/menu-data.js"></script>
+    <script src="../js/menu-service.js"></script>
+    <script src="auth.js"></script>
+    <script src="i18n.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="menu-manager.js"></script>
+    <!-- QR code generation library (global `QRCode`) for the QR tool view -->
+    <script src="lib/qrcode.min.js"></script>
+    <script src="qr-tool.js"></script>
+</body>
+</html>

@@ -18,15 +18,15 @@
 
     <!-- Language Selector -->
     <div class="language-selector">
-        <button class="lang-btn active" data-lang="fr">Français</button>
-        <button class="lang-btn" data-lang="ar">العربية</button>
-        <button class="lang-btn" data-lang="en">English</button>
+        <button class="lang-btn active" data-lang="fr" aria-pressed="true">Français</button>
+        <button class="lang-btn" data-lang="ar" aria-pressed="false">العربية</button>
+        <button class="lang-btn" data-lang="en" aria-pressed="false">English</button>
     </div>
 
     <div class="cart-page">
         <!-- Cart Header -->
         <div class="cart-header">
-            <a href="index.html" class="back-btn">
+            <a href="menu.html" class="back-btn">
                 <span>←</span>
                 <span data-translate="back">Retour au menu</span>
             </a>
@@ -41,7 +41,7 @@
             <div class="cart-empty-icon">🛒</div>
             <h3 data-translate="cart-empty-title">Votre panier est vide</h3>
             <p data-translate="cart-empty-text">Ajoutez des articles pour commencer votre commande</p>
-            <a href="index.html" class="browse-menu-btn" data-translate="browse-menu">Parcourir le menu</a>
+            <a href="menu.html" class="browse-menu-btn" data-translate="browse-menu">Parcourir le menu</a>
         </div>
 
         <!-- Cart Summary -->
@@ -64,6 +64,7 @@
     </div>
 
     <script src="js/menu-data.js"></script>
+    <script src="js/utils.js"></script>
     <script src="js/cart.js"></script>
     <script src="js/script.js"></script>
     <script src="js/theme.js"></script>

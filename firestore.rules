@@ -49,5 +49,14 @@ service cloud.firestore {
       // The admin list is managed from the console / Admin SDK only.
       allow create, update, delete: if false;
     }
+
+    match /menu/{docId} {
+      // The public menu (menu/public) is readable by anyone; writes are
+      // restricted to admins. In dev mode (SKIP_AUTH=true) writes fall back
+      // to localStorage automatically, mirroring the orders update flow.
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
   }
 }

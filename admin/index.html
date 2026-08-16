@@ -7,6 +7,7 @@
     <script>if(localStorage.getItem('adminTheme')==='dark'||(!localStorage.getItem('adminTheme')&&matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}</script>
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="dashboard-brand.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:wght@400;600;700&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
@@ -17,9 +18,9 @@
     <div id="login-screen" class="login-screen">
         <div class="login-container">
             <div class="lang-switcher login-switcher" role="group" aria-label="Language">
-                <button type="button" class="lang-btn" data-lang="en">EN</button>
-                <button type="button" class="lang-btn" data-lang="fr">FR</button>
-                <button type="button" class="lang-btn" data-lang="ar">AR</button>
+                <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+                <button type="button" class="lang-btn" data-lang="fr" aria-pressed="true">FR</button>
+                <button type="button" class="lang-btn" data-lang="ar" aria-pressed="false">AR</button>
             </div>
             <h1 class="login-title">El Rey del Gusto</h1>
             <h2 class="login-subtitle" data-i18n="login.subtitle">Admin Dashboard</h2>
@@ -65,7 +66,15 @@
                         <span class="nav-label" data-i18n="nav.orders">Orders</span>
                         <span class="nav-badge" id="sidebar-pending-badge" hidden>0</span>
                     </button>
-                    <a class="nav-item" href="../index.html" target="_blank" rel="noopener">
+                    <button type="button" class="nav-item" data-view="menu">
+                        <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+                        <span class="nav-label" data-i18n="nav.menu">Menu</span>
+                    </button>
+                    <button type="button" class="nav-item" data-view="qr">
+                        <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
+                        <span class="nav-label" data-i18n="nav.qr">QR Codes</span>
+                    </button>
+                    <a class="nav-item" href="../menu.html" target="_blank" rel="noopener">
                         <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
                         <span class="nav-label" data-i18n="nav.viewSite">View site</span>
                     </a>
@@ -92,9 +101,9 @@
                     </div>
                     <div class="header-right">
                         <div class="lang-switcher" role="group" aria-label="Language">
-                            <button type="button" class="lang-btn" data-lang="en">EN</button>
-                            <button type="button" class="lang-btn" data-lang="fr">FR</button>
-                            <button type="button" class="lang-btn" data-lang="ar">AR</button>
+                            <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+                            <button type="button" class="lang-btn" data-lang="fr" aria-pressed="true">FR</button>
+                            <button type="button" class="lang-btn" data-lang="ar" aria-pressed="false">AR</button>
                         </div>
                         <button type="button" class="icon-btn" id="dark-toggle" title="">
                             <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
@@ -148,6 +157,18 @@
                         <div class="panel">
                             <h2 class="panel-title" data-i18n="overview.quickStats">Quick stats</h2>
                             <div id="overview-quick-stats"></div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics: revenue trend + top selling items -->
+                    <div class="analytics-grid">
+                        <div class="panel analytics-panel">
+                            <h2 class="panel-title" data-i18n="analytics.revenueTitle">Revenue — last 7 days</h2>
+                            <div id="analytics-revenue"></div>
+                        </div>
+                        <div class="panel analytics-panel">
+                            <h2 class="panel-title" data-i18n="analytics.topTitle">Top selling items</h2>
+                            <div id="analytics-top-items"></div>
                         </div>
                     </div>
                 </section>
@@ -261,6 +282,86 @@
                         </div>
                     </div>
                 </section>
+
+                <!-- Menu Management View -->
+                <section class="view" id="view-menu">
+                    <div class="menu-admin-toolbar">
+                        <div class="menu-admin-actions">
+                            <button type="button" class="btn-tool btn-primary" id="menu-add-category-btn">
+                                <span class="menu-btn-plus">+</span>
+                                <span data-i18n="menu.addCategory">New category</span>
+                            </button>
+                            <button type="button" class="btn-tool" id="menu-reload-btn" data-i18n="menu.reload">Reload</button>
+                        </div>
+                        <span id="menu-source" class="menu-source"></span>
+                    </div>
+                    <div class="menu-admin-grid">
+                        <div class="panel menu-categories-panel">
+                            <h2 class="panel-title" data-i18n="menu.categoriesTitle">Categories</h2>
+                            <div id="menu-categories" class="menu-cat-list"></div>
+                        </div>
+                        <div class="panel menu-items-panel">
+                            <div class="menu-items-header">
+                                <h2 class="panel-title" id="menu-items-title">Items</h2>
+                                <button type="button" class="btn-tool" id="menu-add-item-btn" data-i18n="menu.addItem">+ New item</button>
+                            </div>
+                            <div id="menu-items" class="menu-item-list"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- QR Code Generator View -->
+                <section class="view" id="view-qr">
+                    <div class="qr-admin-grid">
+                        <div class="panel qr-settings-panel">
+                            <h2 class="panel-title" data-i18n="qr.settingsTitle">QR settings</h2>
+                            <div class="qr-form">
+                                <label class="qr-field" for="qr-url">
+                                    <span data-i18n="qr.urlLabel">Menu link</span>
+                                    <input type="url" id="qr-url" class="qr-input" inputmode="url" data-i18n-ph="qr.urlPlaceholder" placeholder="https://your-site.com/">
+                                </label>
+                                <label class="qr-field" for="qr-table">
+                                    <span data-i18n="qr.tableLabel">Table number (optional)</span>
+                                    <input type="number" id="qr-table" class="qr-input" min="1" max="999" step="1" inputmode="numeric">
+                                </label>
+                                <label class="qr-field" for="qr-size">
+                                    <span data-i18n="qr.sizeLabel">Size</span>
+                                    <select id="qr-size" class="qr-input">
+                                        <option value="200">200 px</option>
+                                        <option value="256" selected>256 px</option>
+                                        <option value="400">400 px</option>
+                                        <option value="600">600 px</option>
+                                    </select>
+                                </label>
+                                <div class="qr-colors">
+                                    <label class="qr-field qr-color-field" for="qr-fg">
+                                        <span data-i18n="qr.colorLabel">Code color</span>
+                                        <input type="color" id="qr-fg" value="#1a1917">
+                                    </label>
+                                    <label class="qr-field qr-color-field" for="qr-bg">
+                                        <span data-i18n="qr.bgLabel">Background</span>
+                                        <input type="color" id="qr-bg" value="#ffffff">
+                                    </label>
+                                </div>
+                            </div>
+                            <p class="qr-hint" data-i18n="qr.cardHint">Print this card and place it on the tables.</p>
+                        </div>
+
+                        <div class="panel qr-preview-panel">
+                            <h2 class="panel-title" data-i18n="qr.previewTitle">Code preview</h2>
+                            <div class="qr-preview-wrap">
+                                <canvas id="qr-code" class="qr-offscreen" aria-hidden="true"></canvas>
+                                <canvas id="qr-card" class="qr-card-canvas" role="img" aria-label="QR code"></canvas>
+                            </div>
+                            <p id="qr-status" class="qr-status" hidden></p>
+                            <p id="qr-error" class="qr-error" hidden data-i18n="qr.libError">The QR library failed to load. Check your connection and reload.</p>
+                            <div class="qr-actions">
+                                <button type="button" class="btn-tool btn-primary" id="qr-download-btn" data-i18n="qr.download">Download PNG</button>
+                                <button type="button" class="btn-tool" id="qr-print-btn" data-i18n="qr.print">Print</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </main>
         </div>
     </div>
@@ -284,8 +385,14 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="../js/firebase-config.js"></script>
     <script src="../js/order-service.js"></script>
+    <script src="../js/menu-data.js"></script>
+    <script src="../js/menu-service.js"></script>
     <script src="auth.js"></script>
     <script src="i18n.js"></script>
     <script src="dashboard.js"></script>
+    <script src="menu-manager.js"></script>
+    <!-- QR code generation library (global `QRCode`) for the QR tool view -->
+    <script src="lib/qrcode.min.js"></script>
+    <script src="qr-tool.js"></script>
 </body>
 </html>

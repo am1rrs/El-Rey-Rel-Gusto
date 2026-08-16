@@ -16,10 +16,10 @@ const menuData = {
             { name: "Kebab", price: 600, ingredients: "Sauce tomate, kebab, cheddar, olives" },
             { name: "Escalope", price: 600, ingredients: "Sauce tomate, escalope, cheddar, olives" },
             { name: "Mexicaine", price: 650, ingredients: "Sauce tomate, kebab, cheddar, olives" },
-            { name: "Pizza Narcos", price: 700, ingredients: "Sauce tomate, kebab, poulet fumé, cheddar, olives", featured: true },
-            { name: "Pizza Carbonara", price: 800, ingredients: "Sauce tomate, kebab, viande hachée, poulet fumé, cheddar, olives", featured: true },
-            { name: "Pizza El Rey", price: 1000, ingredients: "Tous les ingrédients", signature: true, badge: "Spécialité" },
-            { name: "Pizza Farce", price: 1400, ingredients: "Sauce tomate, 100g gouda, 100g mozzarella, 100g cheddar, 3 viandes au choix, olives", signature: true, badge: "Premium" }
+            { name: "Pizza Narcos", price: 700, ingredients: "Sauce tomate, kebab, poulet fumé, cheddar, olives", featured: true, image: "https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=400&h=300&fit=crop" },
+            { name: "Pizza Carbonara", price: 800, ingredients: "Sauce tomate, kebab, viande hachée, poulet fumé, cheddar, olives", featured: true, image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d0c2?w=400&h=300&fit=crop" },
+            { name: "Pizza El Rey", price: 1000, ingredients: "Tous les ingrédients", signature: true, badge: "Spécialité", image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&h=300&fit=crop" },
+            { name: "Pizza Farce", price: 1400, ingredients: "Sauce tomate, 100g gouda, 100g mozzarella, 100g cheddar, 3 viandes au choix, olives", signature: true, badge: "Premium", image: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=400&h=300&fit=crop" }
         ]
     },
     pizza_blanche: {
@@ -92,7 +92,7 @@ const menuData = {
             { name: "Big Burger", price: 500, ingredients: "triple viande" },
             { name: "Burger Smoke Smash", price: 550, ingredients: "fumée" },
             { name: "Burger Pané", price: 600, ingredients: "viande, cheddar, rings pané" },
-            { name: "Burger El Rey", price: 650, ingredients: "crispy, viande, gouda", signature: true }
+            { name: "Burger El Rey", price: 650, ingredients: "crispy, viande, gouda", signature: true, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop" }
         ]
     },
     hot_chicken: {
@@ -126,7 +126,7 @@ const menuData = {
         icon: "🥗",
         title: { fr: "Salades", ar: "سلطات", en: "Salads" },
         items: [
-            { name: "Salade César", price: 550 },
+            { name: "Salade César", price: 550, image: "https://images.unsplash.com/photo-1546793665-c74683f339c1?w=400&h=300&fit=crop" },
             { name: "Salade de pâtes", price: 500 },
             { name: "Salade de pommes de terre", price: 400 },
             { name: "Salade syrienne", price: 300 },
@@ -177,7 +177,7 @@ const menuData = {
             { name: "Pasta Pesto", price: 600 },
             { name: "Smoke Pasta", price: 650 },
             { name: "Pasta Fruits de Mer", price: 800 },
-            { name: "Lasagne", price: 900 }
+            { name: "Lasagne", price: 900, image: "https://images.unsplash.com/photo-1574894709920-11b28e7367e3?w=400&h=300&fit=crop" }
         ]
     },
     omelettes: {

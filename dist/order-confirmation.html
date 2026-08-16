@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation - El Rey del Gusto</title>
+    <script>if(localStorage.getItem('siteTheme')==='dark'||(!localStorage.getItem('siteTheme')&&matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:wght@400;600;700&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" crossorigin href="/assets/styles-COtixyyD.css">
+  <link rel="stylesheet" crossorigin href="/assets/checkout-VPUQHuxO.css">
+</head>
+<body>
+    <!-- Dark Mode Toggle -->
+    <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+
+    <div class="checkout-page">
+        <div class="confirmation-container">
+            <div class="success-icon">✅</div>
+            <h1 class="confirmation-title">Commande confirmée!</h1>
+            <p class="confirmation-subtitle">Merci pour votre commande</p>
+
+            <div class="order-details">
+                <div class="detail-row">
+                    <span class="detail-label">Numéro de commande:</span>
+                    <span class="detail-value" id="order-id">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Date:</span>
+                    <span class="detail-value" id="order-date">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Type:</span>
+                    <span class="detail-value" id="order-type">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Total:</span>
+                    <span class="detail-value" id="order-total">-</span>
+                </div>
+            </div>
+
+            <div class="confirmation-message">
+                <p id="confirmation-text">Votre commande a été reçue et sera traitée dans les plus brefs délais.</p>
+            </div>
+
+            <div class="confirmation-actions">
+                <a href="menu.html" class="action-btn primary">Retour au menu</a>
+                <button onclick="window.print()" class="action-btn secondary">Imprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('orderId');
+
+            if (!orderId) {
+                const container = document.querySelector('.confirmation-container');
+                if (container) {
+                    container.innerHTML = '<div class="success-icon">⚠️</div>' +
+                        '<h1 class="confirmation-title">Commande introuvable</h1>' +
+                        '<p class="confirmation-subtitle">Aucun numéro de commande fourni.</p>' +
+                        '<div class="confirmation-actions"><a href="menu.html" class="action-btn primary">Retour au menu</a></div>';
+                }
+                setTimeout(() => { window.location.href = 'menu.html'; }, 3000);
+                return;
+            }
+
+            // Show loading state
+            const container = document.querySelector('.confirmation-container');
+            const loadingEl = document.createElement('div');
+            loadingEl.id = 'order-loading';
+            loadingEl.innerHTML = '<div class="loading-spinner"></div><p>جاري تحميل الطلب...</p>';
+            loadingEl.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--card-bg);border-radius:16px;z-index:10;';
+            container.style.position = 'relative';
+            container.appendChild(loadingEl);
+
+            // Fetch order from Firestore
+            async function loadOrder() {
+                try {
+                    const service = window.getOrderService ? window.getOrderService() : null;
+                    if (!service || typeof service.getOrder !== 'function') {
+                        throw new Error('Order service unavailable');
+                    }
+
+                    const order = await service.getOrder(orderId);
+
+                    if (!order) {
+                        throw new Error('Order not found');
+                    }
+
+                    // Remove loading
+                    loadingEl.remove();
+
+                    // Display order details
+                    document.getElementById('order-id').textContent = order.orderId;
+                    document.getElementById('order-date').textContent = new Date(order.timestamp).toLocaleString('fr-DZ');
+
+                    const typeLabels = {
+                        'dine-in': 'Sur place',
+                        'delivery': 'Livraison',
+                        'takeaway': 'À emporter'
+                    };
+                    document.getElementById('order-type').textContent = typeLabels[order.orderType] || order.orderType;
+                    document.getElementById('order-total').textContent = order.total + ' DA';
+
+                    // Customize message based on order type
+                    let message = '';
+                    if (order.orderType === 'dine-in') {
+                        message = `Votre commande à la table ${order.tableNumber} sera préparée dans quelques instants.`;
+                    } else if (order.orderType === 'delivery') {
+                        message = 'Votre commande sera livrée à l\'adresse indiquée dans environ 45 minutes.';
+                    } else {
+                        const pickupTimes = {
+                            'now': 'environ 30 minutes',
+                            '30': '30 minutes',
+                            '60': '1 heure',
+                            '90': '1h30',
+                            '120': '2 heures'
+                        };
+                        const time = pickupTimes[order.pickupTime] || '30 minutes';
+                        message = `Votre commande sera prête pour le retrait dans ${time}.`;
+                    }
+                    document.getElementById('confirmation-text').textContent = message;
+                } catch (error) {
+                    console.error('Failed to load order:', error);
+                    loadingEl.innerHTML = '<p style="color:var(--error-color);">تعذر تحميل الطلب. <a href="menu.html">العودة للقائمة</a></p>';
+                }
+            }
+
+            loadOrder();
+        });
+    </script>
+
+    <style>
+        .confirmation-container {
+            max-width: 600px;
+            margin: 60px auto;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 50px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .success-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+
+        .confirmation-title {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            color: var(--text-black);
+            margin-bottom: 10px;
+        }
+
+        .confirmation-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-dark-gray);
+            margin-bottom: 40px;
+        }
+
+        .order-details {
+            background: var(--bg-cream);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--decorative-gray);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--text-dark-gray);
+        }
+
+        .detail-value {
+            font-weight: 700;
+            color: var(--text-black);
+        }
+
+        .confirmation-message {
+            background: #E8F5E9;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .confirmation-message p {
+            margin: 0;
+            color: #2E7D32;
+            line-height: 1.6;
+        }
+
+        .dark .confirmation-message {
+            background: rgba(46, 125, 50, 0.18);
+        }
+
+        .dark .confirmation-message p {
+            color: #81c784;
+        }
+
+        .confirmation-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 14px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .action-btn.primary {
+            background: var(--price-copper);
+            color: white;
+            border: none;
+        }
+
+        .action-btn.primary:hover {
+            background: #8D5524;
+            transform: translateY(-2px);
+        }
+
+        .action-btn.secondary {
+            background: var(--card-bg);
+            color: var(--text-black);
+            border: 2px solid var(--decorative-gray);
+        }
+
+        .action-btn.secondary:hover {
+            border-color: var(--price-copper);
+        }
+
+        @media (max-width: 768px) {
+            .confirmation-container {
+                padding: 40px 25px;
+            }
+
+            .confirmation-title {
+                font-size: 2rem;
+            }
+
+            .confirmation-actions {
+                flex-direction: column;
+            }
+
+            .action-btn {
+                width: 100%;
+            }
+        }
+
+        @media print {
+            .confirmation-actions {
+                display: none !important;
+            }
+        }
+    </style>
+
+    <script src="js/theme.js"></script>
+</body>
+</html>

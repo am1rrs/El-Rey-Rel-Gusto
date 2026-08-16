@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Menu complet El Rey del Gusto - Menu du restaurant El Rey del Gusto à Relizane, Algérie avec photos, prix et options de commande. Livraison et emporter disponibles.">
+    <title>El Rey del Gusto - Menu Complet</title>
+    <script>if(localStorage.getItem('siteTheme')==='dark'||(!localStorage.getItem('siteTheme')&&matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}</script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/categories.css">
+    <link rel="stylesheet" href="css/cart.css">
+    <link rel="stylesheet" href="css/menu.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:wght@400;600;700&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Dark Mode Toggle -->
+    <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+
+    <!-- Language Selector -->
+    <div class="language-selector">
+        <button class="lang-btn active" data-lang="fr" aria-pressed="true">Français</button>
+        <button class="lang-btn" data-lang="ar" aria-pressed="false">العربية</button>
+        <button class="lang-btn" data-lang="en" aria-pressed="false">English</button>
+    </div>
+
+    <!-- Cart Icon -->
+    <div class="cart-icon-container">
+        <button type="button" class="cart-icon" id="cart-icon" aria-label="Panier - 0 articles">
+            🛒
+            <span class="cart-badge" id="cart-badge" style="display: none;">0</span>
+        </button>
+    </div>
+
+    <!-- Hero (wraps header.header so .table-banner injection still lands inside it) -->
+    <section class="menu-hero">
+        <div class="menu-hero-blob menu-hero-blob-a" aria-hidden="true"></div>
+        <div class="menu-hero-blob menu-hero-blob-b" aria-hidden="true"></div>
+        <header class="header">
+            <div class="decorative-element"></div>
+            <h1 class="restaurant-name">El Rey del Gusto</h1>
+            <p class="tagline" data-translate="tagline">Le Roi du Goût</p>
+            <div class="decorative-element"></div>
+
+            <!-- Quick contact chips -->
+            <div class="hero-chips">
+                <a class="hero-chip" href="tel:0790277731">
+                    <span class="hero-chip-icon">📞</span><span>0790277731</span>
+                </a>
+                <span class="hero-chip">
+                    <span class="hero-chip-icon">📍</span><span data-translate="location">Relizane, Algérie</span>
+                </span>
+                <span class="hero-chip">
+                    <span class="hero-chip-icon">🕒</span><span data-translate="hours">Ouvert tous les jours</span>
+                </span>
+            </div>
+
+            <!-- Hero CTAs -->
+            <div class="hero-ctas">
+                <button type="button" class="hero-cta hero-cta-primary" data-translate="view-menu"
+                        onclick="document.getElementById('menu-container').scrollIntoView({behavior:'smooth'})">Voir le menu</button>
+                <a class="hero-cta hero-cta-secondary" href="tel:0790277731" data-translate="call">Appeler</a>
+            </div>
+        </header>
+    </section>
+
+    <!-- Contact Info -->
+    <section class="contact-section">
+        <div class="contact-grid">
+            <div class="contact-item">
+                <span class="icon">📞</span>
+                <a href="tel:0790277731">0790 27 77 31</a>
+            </div>
+            <div class="contact-item">
+                <span class="icon">📍</span>
+                <span data-translate="location">Relizane, Algérie</span>
+            </div>
+            <div class="contact-item">
+                <span class="icon">🕒</span>
+                <span data-translate="hours">Ouvert tous les jours</span>
+            </div>
+        </div>
+        <div class="social-links">
+            <a href="https://www.instagram.com/elrey.48" target="_blank" class="social-btn">
+                <span>📷</span> Instagram
+            </a>
+            <a href="https://www.snapchat.com/add/el.rey48" target="_blank" class="social-btn">
+                <span>👻</span> Snapchat
+            </a>
+        </div>
+    </section>
+
+    <!-- Category Navigation -->
+    <div class="category-nav-wrapper">
+        <div class="category-nav-container">
+            <div id="category-nav"></div>
+        </div>
+    </div>
+
+    <!-- Menu Container - Will be populated by JavaScript -->
+    <div id="menu-container"></div>
+
+    <!-- QR Code Section -->
+    <section class="qr-section">
+        <h3 data-translate="qr-title">Scannez pour voir le menu</h3>
+        <div id="qrcode"></div>
+        <button class="print-btn" onclick="window.print()" data-translate="print-btn">Imprimer le menu</button>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 El Rey del Gusto - <span data-translate="footer-text">Tous droits réservés</span></p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/menu-data.js"></script>
+    <script src="js/menu-service.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/menu-renderer.js"></script>
+    <script src="js/categories.js"></script>
+    <script src="js/script.js"></script>
+    <script src="js/theme.js"></script>
+</body>
+</html>

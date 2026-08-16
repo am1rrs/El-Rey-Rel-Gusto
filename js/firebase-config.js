@@ -1,7 +1,7 @@
 // Firebase Configuration
 // Replace these values with your Firebase project credentials
 const firebaseConfig = {
-  apiKey: "AIzaSyB_QOE54JOGRlhKmpX6ggvRQ8Ti8dAp7_E",
+  apiKey: "AIzaSyBKqdUG-BZTVltCVHD6-Tn70HbO7hf09DY",
   authDomain: "el-rey-del-gusto.firebaseapp.com",
   projectId: "el-rey-del-gusto",
   storageBucket: "el-rey-del-gusto.firebasestorage.app",
@@ -9,7 +9,9 @@ const firebaseConfig = {
   appId: "1:585819298129:web:c721eb36150b2eefa4db70",
   measurementId: "G-54RPFMJRGJ",
   // Dev mode: set to false when Firebase Auth is working
-  SKIP_AUTH: true
+  SKIP_AUTH: false,
+  // Production Mode: never fall back to localStorage — all reads/writes go to Firebase
+  FORCE_FIREBASE: true
 };
 
 // Initialize Firebase (when ready)

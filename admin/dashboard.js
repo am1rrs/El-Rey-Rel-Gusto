@@ -415,13 +415,17 @@
     }
 
     function switchView(view) {
-        if (view !== 'orders' && view !== 'overview') view = 'overview';
+        if (view !== 'orders' && view !== 'overview' && view !== 'menu' && view !== 'qr') view = 'overview';
         currentView = view;
 
         var overviewView = document.getElementById('view-overview');
         var ordersView = document.getElementById('view-orders');
+        var menuView = document.getElementById('view-menu');
+        var qrView = document.getElementById('view-qr');
         if (overviewView) overviewView.classList.toggle('active', view === 'overview');
         if (ordersView) ordersView.classList.toggle('active', view === 'orders');
+        if (menuView) menuView.classList.toggle('active', view === 'menu');
+        if (qrView) qrView.classList.toggle('active', view === 'qr');
 
         var navItems = document.querySelectorAll('.nav-item[data-view]');
         for (var i = 0; i < navItems.length; i++) {
@@ -438,6 +442,14 @@
 
         if (view === 'orders') {
             applyFilters();
+        } else if (view === 'menu') {
+            if (window.menuManager && typeof window.menuManager.refresh === 'function') {
+                window.menuManager.refresh();
+            }
+        } else if (view === 'qr') {
+            if (window.qrTool && typeof window.qrTool.refresh === 'function') {
+                window.qrTool.refresh();
+            }
         } else {
             renderOverview();
         }
@@ -543,6 +555,119 @@
                 '<div class="quick-stat"><span class="quick-label">' + escapeHtml(t('quick.takeaway')) + '</span><span class="quick-value">' + counts.takeaway + '</span></div>';
             quickEl.innerHTML = q;
         }
+
+        // Analytics panels (7-day revenue + top sellers). No-op when the
+        // containers are absent, so dashboard.js stays safe without the new HTML.
+        renderAnalytics();
+    }
+
+    // ---------------------------------------------------------------------
+    // Analytics: 7-day revenue trend + top selling items (pure CSS, no libs)
+    // ---------------------------------------------------------------------
+    function renderAnalytics() {
+        var revEl = document.getElementById('analytics-revenue');
+        var topEl = document.getElementById('analytics-top-items');
+        if (!revEl && !topEl) return;
+
+        var lang = window.adminI18n && window.adminI18n.getLang ? window.adminI18n.getLang() : 'fr';
+        var locale = window.adminI18n && window.adminI18n.localeFor ? window.adminI18n.localeFor(lang) : lang;
+
+        // Confirmed orders only — same definition as the daily-total stat
+        // (statuses except pending/cancelled).
+        var confirmed = (allOrders || []).filter(function (o) {
+            return o.status !== 'pending' && o.status !== 'cancelled';
+        });
+
+        // ---- 7-day revenue trend ----
+        if (revEl) {
+            var buckets = [];
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
+            for (var i = 6; i >= 0; i--) {
+                var d = new Date(today.getTime() - i * 86400000);
+                d.setHours(0, 0, 0, 0);
+                buckets.push({ start: d.getTime(), label: dayLabelFor(d, locale), total: 0 });
+            }
+            confirmed.forEach(function (o) {
+                var ms = orderTimestampMs(o);
+                for (var b = 0; b < buckets.length; b++) {
+                    var next = (b < buckets.length - 1) ? buckets[b + 1].start : buckets[b].start + 86400000;
+                    if (ms >= buckets[b].start && ms < next) {
+                        buckets[b].total += safeNumber(o.total);
+                        break;
+                    }
+                }
+            });
+
+            var maxTotal = 0;
+            for (var m = 0; m < buckets.length; m++) {
+                if (buckets[m].total > maxTotal) maxTotal = buckets[m].total;
+            }
+
+            if (maxTotal <= 0) {
+                revEl.innerHTML = '<div class="analytics-empty">' + escapeHtml(t('analytics.empty')) + '</div>';
+            } else {
+                var bars = '<div class="revenue-chart">';
+                for (var c = 0; c < buckets.length; c++) {
+                    var pct = Math.max(4, Math.round((buckets[c].total / maxTotal) * 100));
+                    var isToday = c === buckets.length - 1;
+                    bars += '<div class="revenue-bar-col">' +
+                        '<div class="revenue-bar-track">' +
+                            '<div class="revenue-bar' + (isToday ? ' today' : '') + '" style="height:' + pct + '%" title="' + escapeHtml(formatCurrency(buckets[c].total)) + '"></div>' +
+                        '</div>' +
+                        '<span class="revenue-bar-value">' + escapeHtml(formatCurrency(buckets[c].total)) + '</span>' +
+                        '<span class="revenue-bar-label">' + escapeHtml(buckets[c].label) + '</span>' +
+                        '</div>';
+                }
+                bars += '</div>';
+                revEl.innerHTML = bars;
+            }
+        }
+
+        // ---- Top 5 selling items (by quantity) ----
+        if (topEl) {
+            var tally = {};
+            confirmed.forEach(function (o) {
+                (o.items || []).forEach(function (item) {
+                    if (!item || !item.name) return;
+                    var qty = safeNumber(item.quantity);
+                    if (qty < 1) qty = 1;
+                    tally[item.name] = (tally[item.name] || 0) + qty;
+                });
+            });
+
+            var entries = Object.keys(tally).map(function (name) {
+                return { name: name, qty: tally[name] };
+            });
+            entries.sort(function (a, b) { return b.qty - a.qty; });
+            entries = entries.slice(0, 5);
+
+            if (entries.length === 0) {
+                topEl.innerHTML = '<div class="analytics-empty">' + escapeHtml(t('analytics.noItems')) + '</div>';
+            } else {
+                var maxQty = entries[0].qty;
+                var list = '<ol class="top-items">';
+                for (var e = 0; e < entries.length; e++) {
+                    var qpct = Math.round((entries[e].qty / maxQty) * 100);
+                    list += '<li class="top-item">' +
+                        '<span class="top-item-rank">' + (e + 1) + '</span>' +
+                        '<div class="top-item-body">' +
+                            '<div class="top-item-row">' +
+                                '<span class="top-item-name">' + escapeHtml(entries[e].name) + '</span>' +
+                                '<span class="top-item-qty">×' + entries[e].qty + '</span>' +
+                            '</div>' +
+                            '<div class="top-item-bar"><span class="top-item-bar-fill" style="width:' + qpct + '%"></span></div>' +
+                        '</div>' +
+                        '</li>';
+                }
+                list += '</ol>';
+                topEl.innerHTML = list;
+            }
+        }
+    }
+
+    function dayLabelFor(date, locale) {
+        return date.toLocaleDateString(locale || undefined, { weekday: 'short' });
     }
 
     // ---------------------------------------------------------------------
@@ -594,6 +719,14 @@
             updateStats();
             applyFilters(); // re-renders table + pagination with translated labels
             if (activeModalOrderId) renderOrderModal();
+            // Re-render the menu view so its dynamic strings follow the language.
+            if (currentView === 'menu' && window.menuManager && typeof window.menuManager.refresh === 'function') {
+                window.menuManager.refresh();
+            }
+            // Re-draw the QR card (tagline / table text are canvas text).
+            if (currentView === 'qr' && window.qrTool && typeof window.qrTool.refresh === 'function') {
+                window.qrTool.refresh();
+            }
         }
         if (lastStatus) {
             showDataStatus(lastStatus.type, lastStatus.count, lastStatus.message);
@@ -604,9 +737,12 @@
     // once at boot, replaying the current state).
     function handleAuthChange(user) {
         if (user) {
+            // Reset the new-order baseline so the initial snapshot after login
+            // does not trigger a spurious "new order" beep (Phase 5 #38).
+            lastOrderCount = 0;
             showDashboard();
-            startListening();
-            loadOrders(); // initial prime; sets lastOrderCount baseline so no beep on first load
+            // showDashboard() already calls loadOrders() and startListening().
+            // Do NOT call loadOrders() again here — it would double-render.
         } else {
             stopListening();
             allOrders = [];
@@ -873,7 +1009,15 @@
 
         window.adminAuth.login(email, password)
             .then(function () {
-                // Success: onAuthStateChanged → handleAuthChange(user) shows the dashboard.
+                // Success: show dashboard immediately for instant feedback.
+                // onAuthStateChanged will also fire shortly and call handleAuthChange again,
+                // which is idempotent (showDashboard handles already-visible dashboard).
+                if (btn) { btn.disabled = false; }
+                // We know login succeeded; don't wait for onAuthStateChanged to show UI.
+                var user = window.adminAuth.getCurrentUser ? window.adminAuth.getCurrentUser() : null;
+                if (user) {
+                    handleAuthChange(user);
+                }
             })
             .catch(function (error) {
                 if (btn) { btn.disabled = false; }
@@ -896,6 +1040,11 @@
     function handleLogout() {
         if (!confirm(t('logout.confirm'))) {
             return false;
+        }
+        // Clear any pending debounce timer before tearing down.
+        if (searchDebounceTimer) {
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = null;
         }
         // onAuthStateChanged(null) → handleAuthChange(null) shows the login
         // screen and stops the listener.
@@ -928,7 +1077,10 @@
             return;
         }
 
-        // Load once, then subscribe to real-time updates from Firestore
+        // Load once, then subscribe to real-time updates from Firestore.
+        // loadOrders() already triggers render via refreshFromData().
+        // startListening() sets up the real-time listener; its callback
+        // will fire on *changes* only (the first snapshot is already reflected).
         loadOrders();
         startListening();
     }
@@ -991,23 +1143,12 @@
     // ---------------------------------------------------------------------
     // Data loading
     // ---------------------------------------------------------------------
-    function getLocalOrders() {
-        try {
-            var saved = localStorage.getItem('orders');
-            var parsed = saved ? JSON.parse(saved) : [];
-            return Array.isArray(parsed) ? parsed : [];
-        } catch (error) {
-            console.error('Failed to load orders from localStorage:', error);
-            return [];
-        }
-    }
-
     async function loadOrders() {
         try {
             if (adminOrderService && typeof adminOrderService.getAllOrders === 'function') {
                 allOrders = await adminOrderService.getAllOrders();
             } else {
-                allOrders = getLocalOrders();
+                allOrders = [];
             }
 
             allOrders = Array.isArray(allOrders) ? allOrders : [];
@@ -1029,7 +1170,7 @@
             }
 
             showDataStatus('error', null, (error && error.message) || 'Unknown error');
-            allOrders = getLocalOrders();
+            allOrders = [];
             refreshFromData();
         }
     }
@@ -1598,5 +1739,6 @@
         window.setDarkMode = setDarkMode;
         window.toggleSidebar = toggleSidebar;
         window.renderOverview = renderOverview;
+        window.renderAnalytics = renderAnalytics;
     }
 })();

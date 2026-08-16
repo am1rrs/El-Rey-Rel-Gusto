@@ -2,10 +2,26 @@
 // Handles order type selection, form validation, and order submission
 // Updated to open WhatsApp with the order details after successful submission
 
+// Escape HTML to prevent XSS. Delegates to the shared utils module when available
+// (single source of truth), falling back to a local copy for legacy/standalone use.
+function escapeHtml(str) {
+    if (typeof window !== 'undefined' && window.utils && typeof window.utils.escapeHtml === 'function') {
+        return window.utils.escapeHtml(str);
+    }
+    return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 let selectedOrderType = null;
 // cart is declared in cart.js and accessible via window.getCart()
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Wait for cart to be fully initialized (Firebase load or fallback complete)
+    await window.cartReady;
     cart = window.getCart();
     if (!cart) {
         console.error('Cart instance not available on window.getCart();');
@@ -20,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Dine-in table: picked up either from a direct ?table= URL param (QR scan)
     // or from the table number already saved on the cart by the menu page
-    // (QR scan → index.html?table=N → cart carries the table through).
+    // (QR scan → menu.html?table=N → cart carries the table through).
     const urlParams = new URLSearchParams(window.location.search);
     const tableParam = urlParams.get('table');
     const scannedTable = tableParam ? parseInt(tableParam) : (cart.tableNumber || null);
@@ -37,6 +53,7 @@ function selectOrderType(type) {
     // Update button states
     document.querySelectorAll('.order-type-btn').forEach(btn => {
         btn.classList.remove('active');
+        btn.setAttribute('aria-pressed', String(btn.dataset.type === type));
         if (btn.dataset.type === type) {
             btn.classList.add('active');
         }
@@ -99,16 +116,22 @@ function renderOrderSummary() {
         const itemEl = document.createElement('div');
         itemEl.className = 'summary-item';
 
-        const sizeInfo = item.size ? ` (${item.size})` : '';
-        const qtyInfo = item.quantity > 1 ? ` x${item.quantity}` : '';
-        const notesInfo = item.notes ? `<div class="summary-item-details">ملاحظة: ${item.notes}</div>` : '';
+        const safeName = escapeHtml(item.name);
+        const safeSize = escapeHtml(item.size || '');
+        const safeNotes = escapeHtml(item.notes || '');
+        const safeQty = escapeHtml(String(item.quantity));
+        const safePrice = escapeHtml(String(item.price * item.quantity));
+
+        const sizeInfo = safeSize ? ` (${safeSize})` : '';
+        const qtyInfo = item.quantity > 1 ? ` x${safeQty}` : '';
+        const notesInfo = safeNotes ? `<div class="summary-item-details">ملاحظة: ${safeNotes}</div>` : '';
 
         itemEl.innerHTML = `
             <div class="summary-item-info">
-                <div class="summary-item-name">${item.name}${sizeInfo}${qtyInfo}</div>
+                <div class="summary-item-name">${safeName}${sizeInfo}${qtyInfo}</div>
                 ${notesInfo}
             </div>
-            <div class="summary-item-price">${item.price * item.quantity} د.إ</div>
+            <div class="summary-item-price">${safePrice} د.إ</div>
         `;
         container.appendChild(itemEl);
     });
@@ -234,9 +257,6 @@ async function submitOrder() {
     try {
         const result = await createOrder(orderData);
 
-        // Persist local snapshot for the admin dashboard and confirmation page
-        saveOrderLocally(orderData);
-
         // Clear cart after successful save
         cart.clear();
 
@@ -255,30 +275,23 @@ async function submitOrder() {
     }
 }
 
+// Generate a collision-resistant order ID. Delegates to the shared utils module
+// when available (single source of truth), falling back to a local copy.
 function generateOrderId() {
+    if (typeof window !== 'undefined' && window.utils && typeof window.utils.generateOrderId === 'function') {
+        return window.utils.generateOrderId();
+    }
     const date = new Date();
     const dateStr = date.toISOString().split('T')[0].replace(/-/g, '');
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    return `ORD-${dateStr}-${random}`;
-}
-
-function saveOrderLocally(orderData) {
-    // Get existing orders
-    let orders = [];
-    const saved = localStorage.getItem('orders');
-    if (saved) {
-        try {
-            orders = JSON.parse(saved);
-        } catch (e) {
-            console.error('Failed to parse orders:', e);
-        }
+    // Use crypto.randomUUID() when available to avoid Math.random() collisions;
+    // fall back to a high-entropy random suffix otherwise.
+    let suffix;
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        suffix = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
+    } else {
+        suffix = Math.floor(Math.random() * 0xffffffff).toString(16).padStart(8, '0');
     }
-
-    // Add new order
-    orders.push(orderData);
-
-    // Save back to localStorage
-    localStorage.setItem('orders', JSON.stringify(orders));
+    return `ORD-${dateStr}-${suffix}`;
 }
 
 // Export functions

@@ -3,14 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Menu complet El Rey del Gusto - Menu du restaurant El Rey del Gusto à Relizane, Algérie avec photos, prix et options de commande. Livraison et emporter disponibles.">
-    <title>El Rey del Gusto - Menu Complet</title>
+    <meta name="description" content="El Rey del Gusto - Restaurant à Relizane, Algérie. Découvrez notre menu varié : pizzas, burgers, salades, pâtes. Livraison rapide et commande sur place via QR code.">
+    <meta name="theme-color" content="#CD7F32">
+    <meta name="author" content="El Rey del Gusto">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://el-rey-del-gusto.pages.dev/">
+    <title>El Rey del Gusto - Restaurant à Relizane</title>
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="El Rey del Gusto">
+    <meta property="og:title" content="El Rey del Gusto - Restaurant à Relizane">
+    <meta property="og:description" content="Saveurs authentiques, ingrédients frais. Pizzas, burgers, salades, pâtes. Livraison rapide et commande QR sur place.">
+    <meta property="og:locale" content="fr_DZ">
+    <meta property="og:locale:alternate" content="ar_DZ">
+    <meta property="og:locale:alternate" content="en_US">
+    <meta property="og:url" content="https://el-rey-del-gusto.pages.dev/">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1200&h=630&fit=crop">
+    <meta property="og:image:alt" content="Pizza El Rey del Gusto">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="El Rey del Gusto - Restaurant à Relizane">
+    <meta name="twitter:description" content="Saveurs authentiques, ingrédients frais. Pizzas, burgers, salades, pâtes. Livraison rapide et commande QR sur place.">
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1200&h=630&fit=crop">
+
+    <!-- Structured Data: Restaurant -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Restaurant",
+        "name": "El Rey del Gusto",
+        "description": "Restaurant à Relizane, Algérie. Pizzas artisanales, burgers gourmets, salades fraîches, pâtes maison. Livraison rapide et commande QR sur place.",
+        "url": "https://el-rey-del-gusto.pages.dev/",
+        "telephone": "+213790277731",
+        "priceRange": "200-1400 DA",
+        "servesCuisine": ["Italian", "Fast Food", "Algerian"],
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Relizane",
+            "addressCountry": "DZ"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 35.7388,
+            "longitude": 0.5557
+        },
+        "openingHoursSpecification": [
+            {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+                "opens": "11:00",
+                "closes": "23:00"
+            }
+        ],
+        "acceptsReservations": "False",
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "reviewCount": "500"
+        },
+        "hasMenu": "https://el-rey-del-gusto.pages.dev/menu.html",
+        "sameAs": [
+            "https://www.instagram.com/elrey.48",
+            "https://www.snapchat.com/add/el.rey48"
+        ]
+    }
+    </script>
+
     <script>if(localStorage.getItem('siteTheme')==='dark'||(!localStorage.getItem('siteTheme')&&matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}</script>
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/categories.css">
-    <link rel="stylesheet" href="css/cart.css">
+    <link rel="stylesheet" href="css/landing.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+    <!-- Font preload hints for critical hero/landing text -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/averiaseriflibre/v14/vEFz2_5cWgQY08pVkY8X_aG1-TWFqFh2Vg.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/cairo/v22/SLXGc1nY6HkvalteCIoK.woff2">
     <link href="https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:wght@400;600;700&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet">
 </head>
@@ -20,81 +89,280 @@
 
     <!-- Language Selector -->
     <div class="language-selector">
-        <button class="lang-btn active" data-lang="fr">Français</button>
-        <button class="lang-btn" data-lang="ar">العربية</button>
-        <button class="lang-btn" data-lang="en">English</button>
+        <button class="lang-btn active" data-lang="fr" aria-pressed="true">Français</button>
+        <button class="lang-btn" data-lang="ar" aria-pressed="false">العربية</button>
+        <button class="lang-btn" data-lang="en" aria-pressed="false">English</button>
     </div>
 
-    <!-- Cart Icon -->
-    <div class="cart-icon-container">
-        <div class="cart-icon" id="cart-icon" onclick="window.location.href='cart.html'">
-            🛒
-            <span class="cart-badge" id="cart-badge" style="display: none;">0</span>
-        </div>
-    </div>
+    <main class="landing-page">
+        <!-- ===== HERO SECTION ===== -->
+        <header class="landing-hero">
+            <div class="landing-hero-bg has-image" aria-hidden="true" style="--hero-bg-image: url('https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1920&h=1080&fit=crop')"></div>
+            <div class="hero-particles" aria-hidden="true" id="hero-particles"></div>
 
-    <!-- Header -->
-    <header class="header">
-        <div class="decorative-element"></div>
-        <h1 class="restaurant-name">El Rey del Gusto</h1>
-        <p class="tagline" data-translate="tagline">Le Roi du Goût</p>
-        <div class="decorative-element"></div>
-    </header>
+            <div class="hero-content">
+                <span class="hero-badge" data-translate="hero.badge">Nouveau à Relizane</span>
+                <h1 class="restaurant-name" data-translate="hero.title">El Rey del Gusto</h1>
+                <p class="tagline" data-translate="hero.tagline">Le Roi du Goût</p>
+                <p class="hero-subtitle" data-translate="hero.subtitle">Saveurs authentiques, ingrédients frais, passion dans chaque assiette</p>
 
-    <!-- Contact Info -->
-    <section class="contact-section">
-        <div class="contact-grid">
-            <div class="contact-item">
-                <span class="icon">📞</span>
-                <a href="tel:0790277731">0790 27 77 31</a>
+                <div class="hero-chips">
+                    <a class="hero-chip" href="tel:0790277731" aria-label="Appeler le restaurant">
+                        <span class="hero-chip-icon">📞</span>
+                        <span data-translate="hero.phone">0790 27 77 31</span>
+                    </a>
+                    <span class="hero-chip">
+                        <span class="hero-chip-icon">📍</span>
+                        <span data-translate="hero.location">Relizane, Algérie</span>
+                    </span>
+                    <span class="hero-chip">
+                        <span class="hero-chip-icon">🕒</span>
+                        <span data-translate="hero.hours">Ouvert tous les jours 11h–23h</span>
+                    </span>
+                </div>
+
+                <div class="hero-cta-group">
+                    <a class="hero-cta hero-cta-primary" href="menu.html" data-translate="hero.ctaPrimary">
+                        <span class="cta-icon">🍽️</span>
+                        <span>Voir le menu et commander</span>
+                        <span class="cta-arrow">→</span>
+                    </a>
+                    <a class="hero-cta hero-cta-secondary" href="menu.html#specials" data-translate="hero.ctaSecondary">
+                        <span class="cta-icon">⭐</span>
+                        <span>Nos spécialités</span>
+                    </a>
+                </div>
+
+                <div class="hero-trust">
+                    <div class="trust-item">
+                        <span class="trust-icon">✨</span>
+                        <span data-translate="trust.fresh">Frais du jour</span>
+                    </div>
+                    <div class="trust-item">
+                        <span class="trust-icon">🚀</span>
+                        <span data-translate="trust.fast">Livraison rapide</span>
+                    </div>
+                    <div class="trust-item">
+                        <span class="trust-icon">💳</span>
+                        <span data-translate="trust.payment">Paiement à la livraison</span>
+                    </div>
+                    <div class="trust-item">
+                        <span class="trust-icon">🪑</span>
+                        <span data-translate="trust.qr">Commande QR sur place</span>
+                    </div>
+                </div>
             </div>
-            <div class="contact-item">
-                <span class="icon">📍</span>
-                <span data-translate="location">Relizane, Algérie</span>
+
+            <div class="hero-scroll-indicator" aria-hidden="true">
+                <span class="scroll-text" data-translate="hero.scroll">Découvrir</span>
+                <svg class="scroll-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14M19 12l-7 7-7-7"/>
+                </svg>
             </div>
-            <div class="contact-item">
-                <span class="icon">🕒</span>
-                <span data-translate="hours">Ouvert tous les jours</span>
+        </header>
+
+        <!-- ===== MENU PREVIEW SECTION ===== -->
+        <section class="menu-preview" aria-labelledby="menu-preview-title">
+            <div class="section-header">
+                <span class="section-badge" data-translate="menuPreview.badge">Notre Carte</span>
+                <h2 id="menu-preview-title" class="section-title" data-translate="menuPreview.title">Un aperçu de nos délices</h2>
+                <p class="section-subtitle" data-translate="menuPreview.subtitle">Quelques-uns de nos plats les plus appréciés — le menu complet vous attend</p>
             </div>
-        </div>
-        <div class="social-links">
-            <a href="https://www.instagram.com/elrey.48" target="_blank" class="social-btn">
-                <span>📷</span> Instagram
-            </a>
-            <a href="https://www.snapchat.com/add/el.rey48" target="_blank" class="social-btn">
-                <span>👻</span> Snapchat
-            </a>
-        </div>
-    </section>
 
-    <!-- Category Navigation -->
-    <div class="category-nav-wrapper">
-        <div class="category-nav-container">
-            <div id="category-nav"></div>
-        </div>
-    </div>
+            <div class="menu-preview-grid" id="menu-preview-grid">
+                <!-- Populated by JS from menu-data.js -->
+            </div>
 
-    <!-- Menu Container - Will be populated by JavaScript -->
-    <div id="menu-container"></div>
+            <div class="menu-preview-cta">
+                <a href="menu.html" class="hero-cta hero-cta-primary" data-translate="menuPreview.cta">
+                    <span>Voir tout le menu</span>
+                    <span class="cta-arrow">→</span>
+                </a>
+            </div>
+        </section>
 
-    <!-- QR Code Section -->
-    <section class="qr-section">
-        <h3 data-translate="qr-title">Scannez pour voir le menu</h3>
-        <div id="qrcode"></div>
-        <button class="print-btn" onclick="window.print()" data-translate="print-btn">Imprimer le menu</button>
-    </section>
+        <!-- ===== FEATURES SECTION ===== -->
+        <section class="landing-features" aria-labelledby="features-title">
+            <div class="section-header">
+                <span class="section-badge" data-translate="features.badge">Pourquoi nous choisir</span>
+                <h2 id="features-title" class="section-title" data-translate="features.title">Une expérience qui a du goût</h2>
+                <p class="section-subtitle" data-translate="features.subtitle">Plus qu'un restaurant, une expérience culinaire complète</p>
+            </div>
 
-    <!-- Footer -->
+            <div class="features-grid">
+                <article class="feature">
+                    <div class="feature-icon-wrapper">
+                        <span class="feature-icon">🍕</span>
+                    </div>
+                    <h3 data-translate="feature.menu">Menu varié & authentique</h3>
+                    <p data-translate="feature.menuDesc">Pizzas artisanales, burgers gourmets, salades fraîches, pâtes maison — préparés chaque matin avec des ingrédients sélectionnés.</p>
+                    <ul class="feature-highlights">
+                        <li data-translate="feature.highlight1">Recettes exclusives</li>
+                        <li data-translate="feature.highlight2">Options végétariennes</li>
+                        <li data-translate="feature.highlight3">Portions généreuses</li>
+                    </ul>
+                </article>
+
+                <article class="feature">
+                    <div class="feature-icon-wrapper">
+                        <span class="feature-icon">🚗</span>
+                    </div>
+                    <h3 data-translate="feature.delivery">Livraison & Emporter</h3>
+                    <p data-translate="feature.deliveryDesc">Commandez en ligne, suivez votre commande en temps réel. Livraison à Relizane en ~45 min ou retrait au restaurant quand vous voulez.</p>
+                    <ul class="feature-highlights">
+                        <li data-translate="feature.highlight4">Suivi en direct</li>
+                        <li data-translate="feature.highlight5">Zone étendue</li>
+                        <li data-translate="feature.highlight6">Emballage soigné</li>
+                    </ul>
+                </article>
+
+                <article class="feature">
+                    <div class="feature-icon-wrapper">
+                        <span class="feature-icon">🪑</span>
+                    </div>
+                    <h3 data-translate="feature.dinein">Sur place sans attendre</h3>
+                    <p data-translate="feature.dineinDesc">Scannez le QR code sur votre table, commandez depuis votre téléphone, payez à la fin. Zéro attente, service fluide.</p>
+                    <ul class="feature-highlights">
+                        <li data-translate="feature.highlight7">Menu multilingue</li>
+                        <li data-translate="feature.highlight8">Personnalisation facile</li>
+                        <li data-translate="feature.highlight9">Facture par email</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <!-- ===== TESTIMONIALS SECTION ===== -->
+        <section class="testimonials" aria-labelledby="testimonials-title">
+            <div class="section-header">
+                <span class="section-badge" data-translate="testimonials.badge">Avis clients</span>
+                <h2 id="testimonials-title" class="section-title" data-translate="testimonials.title">Ce qu'en disent nos clients</h2>
+                <p class="section-subtitle" data-translate="testimonials.subtitle">Des centaines de clients satisfaits chaque semaine</p>
+            </div>
+
+            <div class="testimonials-carousel" id="testimonials-carousel">
+                <div class="testimonials-track">
+                    <!-- Populated by JS -->
+                </div>
+                <div class="testimonials-dots" id="testimonials-dots" aria-label="Navigation avis"></div>
+            </div>
+
+            <div class="testimonials-stats">
+                <div class="stat">
+                    <span class="stat-number">4.8</span>
+                    <span class="stat-label" data-translate="stats.rating">Note moyenne</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">500+</span>
+                    <span class="stat-label" data-translate="stats.reviews">Avis vérifiés</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">95%</span>
+                    <span class="stat-label" data-translate="stats.return">Clients récurrents</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== CONTACT / LOCATION SECTION ===== -->
+        <section class="landing-contact" aria-labelledby="contact-title">
+            <div class="section-header">
+                <span class="section-badge" data-translate="contact.badge">Nous trouver</span>
+                <h2 id="contact-title" class="section-title" data-translate="contact.title">Venez nous rendre visite</h2>
+                <p class="section-subtitle" data-translate="contact.subtitle">Ou commandez depuis chez vous — on s'occupe de tout</p>
+            </div>
+
+            <div class="contact-grid">
+                <a class="contact-item contact-item-primary" href="tel:0790277731">
+                    <div class="contact-icon-wrapper">
+                        <span class="icon">📞</span>
+                    </div>
+                    <div class="contact-info">
+                        <span class="contact-label" data-translate="contact.phoneLabel">Appelez-nous</span>
+                        <span class="contact-value">0790 27 77 31</span>
+                    </div>
+                </a>
+
+                <div class="contact-item">
+                    <div class="contact-icon-wrapper">
+                        <span class="icon">📍</span>
+                    </div>
+                    <div class="contact-info">
+                        <span class="contact-label" data-translate="contact.addressLabel">Adresse</span>
+                        <span class="contact-value" data-translate="contact.address">Relizane, Algérie</span>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon-wrapper">
+                        <span class="icon">🕒</span>
+                    </div>
+                    <div class="contact-info">
+                        <span class="contact-label" data-translate="contact.hoursLabel">Horaires</span>
+                        <span class="contact-value" data-translate="contact.hours">Tous les jours 11h–23h</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="social-links">
+                <a href="https://www.instagram.com/elrey.48" target="_blank" rel="noopener" class="social-btn instagram" aria-label="Suivez-nous sur Instagram">
+                    <span class="social-icon">📷</span>
+                    <span>Instagram</span>
+                    <svg class="external-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                </a>
+                <a href="https://www.snapchat.com/add/el.rey48" target="_blank" rel="noopener" class="social-btn snapchat" aria-label="Ajoutez-nous sur Snapchat">
+                    <span class="social-icon">👻</span>
+                    <span>Snapchat</span>
+                    <svg class="external-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                </a>
+            </div>
+
+            <!-- Map placeholder -->
+            <div class="map-placeholder" id="map-placeholder">
+                <div class="map-content">
+                    <span class="map-icon">🗺️</span>
+                    <p data-translate="contact.mapText">Notre localisation sur Google Maps</p>
+                    <a href="https://maps.google.com/?q=Relizane,+Algérie" target="_blank" rel="noopener" class="map-link" data-translate="contact.openMaps">Ouvrir dans Maps →</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== NEWSLETTER / STAY CONNECTED ===== -->
+        <section class="newsletter" aria-labelledby="newsletter-title">
+            <div class="newsletter-content">
+                <div class="newsletter-text">
+                    <h2 id="newsletter-title" data-translate="newsletter.title">Restez informé de nos offres</h2>
+                    <p data-translate="newsletter.subtitle">Promotions exclusives, nouveaux plats, événements — directement dans votre boîte mail</p>
+                </div>
+                <form class="newsletter-form" id="newsletter-form" action="#" method="POST">
+                    <div class="form-group">
+                        <label for="newsletter-email" class="visually-hidden" data-translate="newsletter.emailLabel">Votre email</label>
+                        <input type="email" id="newsletter-email" name="email" placeholder="votre@email.com" required autocomplete="email">
+                        <button type="submit" class="newsletter-submit" data-translate="newsletter.submit">S'inscrire</button>
+                    </div>
+                    <p class="newsletter-note" data-translate="newsletter.privacy">Pas de spam, désinscription en 1 clic. <a href="#" data-translate="newsletter.terms">Mentions légales</a></p>
+                </form>
+            </div>
+        </section>
+    </main>
+
     <footer class="footer">
-        <p>&copy; 2026 El Rey del Gusto - <span data-translate="footer-text">Tous droits réservés</span></p>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="footer-logo">🍽️</span>
+                <span class="footer-name">El Rey del Gusto</span>
+            </div>
+            <p class="footer-copyright">&copy; 2026 El Rey del Gusto - <span data-translate="footer-text">Tous droits réservés</span></p>
+            <div class="footer-links">
+                <a href="menu.html" data-translate="footer.menu">Menu</a>
+                <a href="#" data-translate="footer.legal">Mentions légales</a>
+                <a href="#" data-translate="footer.privacy">Confidentialité</a>
+            </div>
+        </div>
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="js/menu-data.js"></script>
-    <script src="js/cart.js"></script>
-    <script src="js/menu-renderer.js"></script>
-    <script src="js/categories.js"></script>
-    <script src="js/script.js"></script>
+    <!-- Scripts -->
     <script src="js/theme.js"></script>
+    <script src="js/script.js"></script>
+    <script src="js/menu-data.js"></script>
+    <script src="js/landing-enhancements.js"></script>
 </body>
 </html>

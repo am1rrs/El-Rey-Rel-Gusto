@@ -1,0 +1,7 @@
+name = "el-rey-del-gusto"
+compatibility_date = "2026-08-14"
+pages_build_output_dir = "dist"
+
+# Optional: add bindings, environment variables, etc.
+# [vars]
+# FIREBASE_API_KEY = "AIzaSyBKqdUG-BZTVltCVHD6-Tn70HbO7hf09DY"

@@ -205,7 +205,7 @@
 }
 
 .submit-order-btn:hover {
-    background: #B87333;
+    background: #8D5524;
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(205, 127, 50, 0.4);
 }
@@ -250,7 +250,7 @@
 
 /* Error Message */
 .error-message {
-    background: #ff4444;
+    background: #C62828;
     color: white;
     padding: 15px 20px;
     border-radius: 8px;
@@ -264,7 +264,7 @@
 
 /* Success Message */
 .success-banner {
-    background: #4CAF50;
+    background: #2E7D32;
     color: white;
     padding: 15px 20px;
     border-radius: 8px;

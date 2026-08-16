@@ -1,5 +1,5 @@
 // Order Service
-// Handles order submission and retrieval using Firebase or localStorage fallback
+// Handles order submission and retrieval using Firebase (Production Mode)
 
 const ORDER_WRITE_TIMEOUT_MS = 15000;
 
@@ -61,17 +61,18 @@ class OrderService {
         }
 
         if (!this.useFirebase) {
-            console.log('Using localStorage for order storage');
+            console.error('Firestore not initialized. Orders will fail in Production Mode.');
         }
     }
 
-    // Submit order to Firebase or localStorage
+    // Submit order to Firebase only (Production Mode - no localStorage fallback)
     async submitOrder(orderData) {
-        if (this.useFirebase && this.db) {
-            return await this.submitToFirebase(orderData);
-        } else {
-            return this.submitToLocalStorage(orderData);
+        if (!this.useFirebase || !this.db) {
+            const error = new Error('Firestore not initialized. Check Firebase config and authentication.');
+            console.error('Submit order failed:', error.message);
+            return { success: false, error: error.message };
         }
+        return await this.submitToFirebase(orderData);
     }
 
     // Submit to Firebase Firestore
@@ -108,40 +109,13 @@ class OrderService {
         }
     }
 
-    // Submit to localStorage (fallback)
-    submitToLocalStorage(orderData) {
-        try {
-            let orders = [];
-            const saved = localStorage.getItem('orders');
-            if (saved) {
-                orders = JSON.parse(saved);
-            }
-
-            orders.push(orderData);
-            localStorage.setItem('orders', JSON.stringify(orders));
-
-            console.log('Order saved to localStorage:', orderData.orderId);
-            return {
-                success: true,
-                orderId: orderData.orderId,
-                storage: 'localStorage'
-            };
-        } catch (error) {
-            console.error('localStorage error:', error);
-            return {
-                success: false,
-                error: error.message
-            };
-        }
-    }
-
-    // Get order by ID
+    // Get order by ID - Firebase only (Production Mode)
     async getOrder(orderId) {
-        if (this.useFirebase && this.db) {
-            return await this.getOrderFromFirebase(orderId);
-        } else {
-            return this.getOrderFromLocalStorage(orderId);
+        if (!this.useFirebase || !this.db) {
+            console.error('Firestore not initialized. Cannot retrieve order.');
+            return null;
         }
+        return await this.getOrderFromFirebase(orderId);
     }
 
     async getOrderFromFirebase(orderId) {
@@ -158,27 +132,17 @@ class OrderService {
             return snapshot.docs[0].data();
         } catch (error) {
             console.error('Firebase get error:', error);
-            return this.getOrderFromLocalStorage(orderId);
+            throw error; // Production mode: propagate error instead of falling back
         }
     }
 
-    getOrderFromLocalStorage(orderId) {
-        try {
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            return orders.find(o => o.orderId === orderId) || null;
-        } catch (error) {
-            console.error('localStorage error:', error);
-            return null;
-        }
-    }
-
-    // Get all orders (for admin)
+    // Get all orders (for admin) - Firebase only (Production Mode)
     async getAllOrders(limit = 50) {
-        if (this.useFirebase && this.db) {
-            return await this.getAllOrdersFromFirebase(limit);
-        } else {
-            return this.getAllOrdersFromLocalStorage();
+        if (!this.useFirebase || !this.db) {
+            console.error('Firestore not initialized. Cannot retrieve orders.');
+            return [];
         }
+        return await this.getAllOrdersFromFirebase(limit);
     }
 
     async getAllOrdersFromFirebase(limit) {
@@ -206,27 +170,18 @@ class OrderService {
                     }))
                     .sort((a, b) => orderTimestampMs(b) - orderTimestampMs(a));
             }
-            throw error; // propagate permission / network errors so the UI shows them
+            console.error('Firebase getAllOrders error:', error);
+            throw error; // Production mode: propagate error
         }
     }
 
-    getAllOrdersFromLocalStorage() {
-        try {
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            return orders.sort((a, b) => b.timestamp - a.timestamp);
-        } catch (error) {
-            console.error('localStorage error:', error);
-            return [];
-        }
-    }
-
-    // Update order status
+    // Update order status - Firebase only (Production Mode)
     async updateOrderStatus(orderId, newStatus) {
-        if (this.useFirebase && this.db) {
-            return await this.updateStatusInFirebase(orderId, newStatus);
-        } else {
-            return this.updateStatusInLocalStorage(orderId, newStatus);
+        if (!this.useFirebase || !this.db) {
+            console.error('Firestore not initialized. Cannot update order status.');
+            return { success: false, error: 'Firestore not initialized' };
         }
+        return await this.updateStatusInFirebase(orderId, newStatus);
     }
 
     async updateStatusInFirebase(orderId, newStatus) {
@@ -249,27 +204,7 @@ class OrderService {
             return { success: true };
         } catch (error) {
             console.error('Firebase update error:', error);
-            return this.updateStatusInLocalStorage(orderId, newStatus);
-        }
-    }
-
-    updateStatusInLocalStorage(orderId, newStatus) {
-        try {
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            const orderIndex = orders.findIndex(o => o.orderId === orderId);
-
-            if (orderIndex === -1) {
-                return { success: false, error: 'Order not found' };
-            }
-
-            orders[orderIndex].status = newStatus;
-            orders[orderIndex].updatedAt = Date.now();
-
-            localStorage.setItem('orders', JSON.stringify(orders));
-            return { success: true };
-        } catch (error) {
-            console.error('localStorage error:', error);
-            return { success: false, error: error.message };
+            throw error; // Production mode: propagate error instead of falling back
         }
     }
 
